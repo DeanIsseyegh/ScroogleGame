@@ -6,6 +6,10 @@ sourceSets.main.java.srcDirs = [ "src/" ]
 project.ext.mainClassName = "com.mygdx.game.desktop.DesktopLauncher"
 project.ext.assetsDir = new File("../android/assets");
 
+dependencies {
+    compile project(":core")
+}
+
 task run(dependsOn: classes, type: JavaExec) {
     main = project.mainClassName
     classpath = sourceSets.main.runtimeClasspath
@@ -26,7 +30,7 @@ task debug(dependsOn: classes, type: JavaExec) {
 task dist(type: Jar) {
     from files(sourceSets.main.output.classesDir)
     from files(sourceSets.main.output.resourcesDir)
-    from {configurations.compile.collect {zipTree(it)}}
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     from files(project.assetsDir);
 
     manifest {

@@ -8,7 +8,6 @@ import com.badlogic.gdx.audio.Music
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Rectangle
@@ -16,9 +15,9 @@ import com.badlogic.gdx.utils.TimeUtils
 import com.badlogic.gdx.utils.viewport.FitViewport
 
 
-class ScroogleGameKotlin(private val game: Game,
-                         private val viewPortWidth: Float,
-                         private val viewPortHeight: Float) : Screen {
+class ScroogleScreen(private val game: Game,
+                     private val viewPortWidth: Float,
+                     private val viewPortHeight: Float) : Screen {
 
     private var lastEnemySpawnTime: Long = 0
     private val batch: SpriteBatch
