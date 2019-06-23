@@ -13,6 +13,7 @@ import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.utils.TimeUtils
 import com.badlogic.gdx.utils.viewport.FitViewport
+import java.lang.NullPointerException
 
 
 class ScroogleScreen(private val game: Game,
@@ -67,6 +68,10 @@ class ScroogleScreen(private val game: Game,
     override fun render(delta: Float) {
         viewport.apply()
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
+
+        if (delta > 0.9) {
+            throw NullPointerException("NPE! Ah!")
+        }
 
         if (TimeUtils.millis() - lastEnemySpawnTime > 1000) spawnEnemy()
 
