@@ -101,7 +101,7 @@ class ScroogleScreen(private val game: Game,
         if (player.x > (viewPortWidth - player.width)) player.x = viewPortWidth - player.width
     }
 
-    private fun isPlayerHit(): Boolean = enemies.any { it.overlaps(player) }
+    private fun isPlayerHit(): Boolean = enemies.any { !it.overlaps(player) }
 
     private fun showGameOverScreen() {
         isDead = true
