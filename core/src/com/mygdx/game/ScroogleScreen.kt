@@ -68,7 +68,7 @@ class ScroogleScreen(private val game: Game,
         viewport.apply()
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
 
-        if (TimeUtils.millis() - lastEnemySpawnTime > 1000) spawnEnemy()
+        if (TimeUtils.millis() - lastEnemySpawnTime > 100) spawnEnemy()
 
         batch.projectionMatrix = viewport.camera.combined
         batch.begin()
