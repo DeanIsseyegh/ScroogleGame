@@ -8,6 +8,7 @@ import com.badlogic.gdx.audio.Music
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.Texture
+import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Rectangle
@@ -26,7 +27,9 @@ class ScroogleScreen(private val game: Game,
     private val levelBackgroundImg: Texture
     private val music: Music
     private val player: Rectangle
+    private val playerHealthHealth: PlayerHealth = PlayerHealth()
     private var enemies: MutableList<Rectangle>
+    private val font: BitmapFont = BitmapFont()
 
     var viewport: FitViewport
     private var isDead = false
@@ -74,12 +77,13 @@ class ScroogleScreen(private val game: Game,
         batch.begin()
         batch.draw(levelBackgroundImg, 0f, 0f, viewPortWidth, viewPortHeight)
         batch.draw(knightImg, player.x, player.y, player.width, player.height)
+        font.draw(batch, "Health: ${playerHealthHealth.hitpoints}/${playerHealthHealth.maxHealth}", viewPortWidth - 100f, viewPortHeight)
         enemies.forEach { enemy -> batch.draw(enemyImg, enemy.x, enemy.y) }
         batch.end()
 
         handlePlayerInput(delta)
         moveEnemies(delta)
-        if (isPlayerHit()) showGameOverScreen()
+        checkEnemyCollision()
     }
 
     private fun moveEnemies(delta: Float) {
@@ -101,12 +105,17 @@ class ScroogleScreen(private val game: Game,
         if (player.x > (viewPortWidth - player.width)) player.x = viewPortWidth - player.width
     }
 
-    private fun isPlayerHit(): Boolean = enemies.any { it.overlaps(player) }
-
-    private fun showGameOverScreen() {
-        isDead = true
-        game.screen = GameOverScreen(game, viewPortWidth, viewPortHeight)
+    private fun checkEnemyCollision() {
+        val enemyThatsHitPlayer = enemies.find { it.overlaps(player) }
+        if (enemyThatsHitPlayer != null) {
+            playerHealthHealth.hitpoints = playerHealthHealth.hitpoints - 1
+            if (playerHealthHealth.hitpoints == 0L) {
+                isDead = true
+                game.screen = GameOverScreen(game, viewPortWidth, viewPortHeight)
+            }
+        }
     }
+
 
     override fun dispose() {
         batch.dispose()
