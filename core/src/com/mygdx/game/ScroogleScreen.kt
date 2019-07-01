@@ -85,8 +85,8 @@ class ScroogleScreen(private val game: Game,
 
         handlePlayerInput(delta)
         moveEnemies(delta)
-        moveOuchText()
         checkEnemyCollision()
+        moveOuchText()
     }
 
     private fun moveEnemies(delta: Float) {
