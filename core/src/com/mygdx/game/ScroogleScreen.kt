@@ -109,6 +109,7 @@ class ScroogleScreen(private val game: Game,
         val enemyThatsHitPlayer = enemies.find { it.overlaps(player) }
         if (enemyThatsHitPlayer != null) {
             playerHealthHealth.hitpoints = playerHealthHealth.hitpoints - 1
+            enemies.remove(enemyThatsHitPlayer)
             if (playerHealthHealth.hitpoints == 0L) {
                 isDead = true
                 game.screen = GameOverScreen(game, viewPortWidth, viewPortHeight)
