@@ -27,7 +27,7 @@ class ScroogleScreen(private val game: Game,
     private val levelBackgroundImg: Texture
     private val music: Music
     private val player: Rectangle
-    private val playerHealthHealth: PlayerHealth = PlayerHealth()
+    private val playerHealth: PlayerHealth = PlayerHealth()
     private var enemies: MutableList<Rectangle>
     private val font: BitmapFont = BitmapFont()
 
@@ -77,7 +77,7 @@ class ScroogleScreen(private val game: Game,
         batch.begin()
         batch.draw(levelBackgroundImg, 0f, 0f, viewPortWidth, viewPortHeight)
         batch.draw(knightImg, player.x, player.y, player.width, player.height)
-        font.draw(batch, "Health: ${playerHealthHealth.hitpoints}/${playerHealthHealth.maxHealth}", viewPortWidth - 100f, viewPortHeight)
+        font.draw(batch, "Health: ${playerHealth.hitpoints}/${playerHealth.maxHealth}", viewPortWidth - 100f, viewPortHeight)
         enemies.forEach { enemy -> batch.draw(enemyImg, enemy.x, enemy.y) }
         batch.end()
 
@@ -108,9 +108,9 @@ class ScroogleScreen(private val game: Game,
     private fun checkEnemyCollision() {
         val enemyThatsHitPlayer = enemies.find { it.overlaps(player) }
         if (enemyThatsHitPlayer != null) {
-            playerHealthHealth.hitpoints = playerHealthHealth.hitpoints - 1
+            playerHealth.hitpoints = playerHealth.hitpoints - 1
             enemies.remove(enemyThatsHitPlayer)
-            if (playerHealthHealth.hitpoints == 0L) {
+            if (playerHealth.hitpoints == 0L) {
                 isDead = true
                 game.screen = GameOverScreen(game, viewPortWidth, viewPortHeight)
             }
