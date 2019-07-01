@@ -75,11 +75,11 @@ class ScroogleScreen(private val game: Game,
         batch.draw(levelBackgroundImg, 0f, 0f, viewPortWidth, viewPortHeight)
         batch.draw(knightImg, player.x, player.y, player.width, player.height)
         enemies.forEach { enemy -> batch.draw(enemyImg, enemy.x, enemy.y) }
-        if (isPlayerHit()) showGameOverScreen()
         batch.end()
 
         handlePlayerInput(delta)
         moveEnemies(delta)
+        if (isPlayerHit()) showGameOverScreen()
     }
 
     private fun moveEnemies(delta: Float) {
