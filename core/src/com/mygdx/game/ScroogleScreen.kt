@@ -85,14 +85,8 @@ class ScroogleScreen(private val game: Game,
 
         handlePlayerInput(delta)
         moveEnemies(delta)
-        moveOuchText(delta)
+        moveOuchText()
         checkEnemyCollision()
-    }
-
-    private fun moveOuchText(delta: Float) {
-        ouchTextList.forEach { ouchText ->
-            ouchText.y += 200 * delta
-        }
     }
 
     private fun moveEnemies(delta: Float) {
@@ -127,13 +121,18 @@ class ScroogleScreen(private val game: Game,
         }
     }
 
-
     override fun dispose() {
         batch.dispose()
     }
 
     override fun resize(width: Int, height: Int) {
         viewport.update(width, height, true)
+    }
+
+    private fun moveOuchText() {
+        ouchTextList.forEach { ouchText ->
+            ouchText.y += 200
+        }
     }
 
     override fun hide() {
