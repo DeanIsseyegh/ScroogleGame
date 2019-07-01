@@ -30,6 +30,7 @@ class ScroogleScreen(private val game: Game,
     private val playerHealth: PlayerHealth = PlayerHealth()
     private var enemies: MutableList<Rectangle>
     private val font: BitmapFont = BitmapFont()
+    private val ouchTextList: MutableList<OuchText> = mutableListOf()
 
     var viewport: FitViewport
     private var isDead = false
@@ -75,6 +76,7 @@ class ScroogleScreen(private val game: Game,
 
         batch.projectionMatrix = viewport.camera.combined
         batch.begin()
+        ouchTextList.forEach { ouchText -> font.draw(batch, ouchText.ouchText, ouchText.x, ouchText.y) }
         batch.draw(levelBackgroundImg, 0f, 0f, viewPortWidth, viewPortHeight)
         batch.draw(knightImg, player.x, player.y, player.width, player.height)
         font.draw(batch, "Health: ${playerHealth.hitpoints}/${playerHealth.maxHealth}", viewPortWidth - 100f, viewPortHeight)
@@ -83,7 +85,14 @@ class ScroogleScreen(private val game: Game,
 
         handlePlayerInput(delta)
         moveEnemies(delta)
+        moveOuchText(delta)
         checkEnemyCollision()
+    }
+
+    private fun moveOuchText(delta: Float) {
+        ouchTextList.forEach { ouchText ->
+            ouchText.y += 200 * delta
+        }
     }
 
     private fun moveEnemies(delta: Float) {
@@ -110,6 +119,7 @@ class ScroogleScreen(private val game: Game,
         if (enemyThatsHitPlayer != null) {
             playerHealth.hitpoints = playerHealth.hitpoints - 1
             enemies.remove(enemyThatsHitPlayer)
+            ouchTextList.add(OuchText(player.x))
             if (playerHealth.hitpoints == 0L) {
                 isDead = true
                 game.screen = GameOverScreen(game, viewPortWidth, viewPortHeight)
