@@ -126,15 +126,15 @@ class ScroogleScreen(private val game: Game,
     }
 
     override fun hide() {
-        //No op
+        println("Hiding!")
     }
 
     override fun show() {
-        //No op
+        println("Showing!")
     }
 
     override fun pause() {
-        //No op
+        println("Pausing!")
     }
 
     override fun resume() {
