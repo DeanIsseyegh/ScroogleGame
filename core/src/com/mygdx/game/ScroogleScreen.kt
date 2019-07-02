@@ -23,11 +23,12 @@ class ScroogleScreen(private val game: Game,
     private var lastEnemySpawnTime: Long = 0
     private val batch: SpriteBatch
     private val knightImg: Texture
+    private val knightWeapon: Texture
     private val enemyImg: Texture
     private val levelBackgroundImg: Texture
     private val music: Music
     private val player: Rectangle
-    private val playerHealth: PlayerHealth = PlayerHealth()
+    private val playerState: PlayerState = PlayerState()
     private var enemies: MutableList<Rectangle>
     private val font: BitmapFont = BitmapFont()
     private val ouchTextList: MutableList<OuchText> = mutableListOf()
@@ -43,6 +44,7 @@ class ScroogleScreen(private val game: Game,
         knightImg = Texture("player/knight/knight_f_idle_anim_f0.png")
         enemyImg = Texture("enemy/bigdemon/big_demon_idle_anim_f0.png")
         levelBackgroundImg = Texture("levels/level1/background.png")
+        knightWeapon = Texture("player/weapons/weapon1.png")
         music = Gdx.audio.newMusic(Gdx.files.internal("music/Level1Music.mp3"))
         music.isLooping = true
         val camera = OrthographicCamera(viewPortWidth, viewPortHeight)
@@ -79,11 +81,13 @@ class ScroogleScreen(private val game: Game,
         ouchTextList.forEach { ouchText -> font.draw(batch, ouchText.ouchText, ouchText.x, ouchText.y) }
         batch.draw(levelBackgroundImg, 0f, 0f, viewPortWidth, viewPortHeight)
         batch.draw(knightImg, player.x, player.y, player.width, player.height)
-        font.draw(batch, "Health: ${playerHealth.hitpoints}/${playerHealth.maxHealth}", viewPortWidth - 100f, viewPortHeight)
+        font.draw(batch, "Health: ${playerState.hitpoints}/${playerState.maxHealth}", viewPortWidth - 100f, viewPortHeight)
+        if (playerState.isAttacking) batch.draw(knightWeapon, player.x + player.height, player.y + player.width/2)
         enemies.forEach { enemy -> batch.draw(enemyImg, enemy.x, enemy.y) }
         batch.end()
 
         handlePlayerInput(delta)
+        handePlayerAttack(delta)
         moveEnemies(delta)
         checkEnemyCollision()
         moveOuchText()
@@ -106,15 +110,22 @@ class ScroogleScreen(private val game: Game,
 
         if (player.x < 0) player.x = 0f
         if (player.x > (viewPortWidth - player.width)) player.x = viewPortWidth - player.width
+        if (Gdx.input.isKeyPressed(Input.Keys.A)) {
+            playerState.isAttacking = true
+        }
+    }
+
+    private fun handePlayerAttack(delta: Float) {
+
     }
 
     private fun checkEnemyCollision() {
         val enemyThatsHitPlayer = enemies.find { it.overlaps(player) }
         if (enemyThatsHitPlayer != null) {
-            playerHealth.hitpoints = playerHealth.hitpoints - 1
+            playerState.hitpoints = playerState.hitpoints - 1
             enemies.remove(enemyThatsHitPlayer)
             ouchTextList.add(OuchText(player.x))
-            if (playerHealth.hitpoints == 0L) {
+            if (playerState.hitpoints == 0L) {
                 isDead = true
                 game.screen = GameOverScreen(game, viewPortWidth, viewPortHeight)
             }
