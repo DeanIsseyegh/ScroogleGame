@@ -125,6 +125,7 @@ class ScroogleScreen(private val game: Game,
             playerState.weapon.y = player.y + player.height / 2
             playerState.timeHasBeenAttacking += delta
         } else {
+            playerState.timeHasBeenAttacking = 0f
             playerState.weapon.x = -100f
             playerState.weapon.y = -100f
         }
