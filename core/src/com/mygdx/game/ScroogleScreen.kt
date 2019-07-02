@@ -79,11 +79,11 @@ class ScroogleScreen(private val game: Game,
 
         batch.projectionMatrix = viewport.camera.combined
         batch.begin()
-        ouchTextList.forEach { ouchText -> font.draw(batch, ouchText.ouchText, ouchText.x, ouchText.y) }
         batch.draw(levelBackgroundImg, 0f, 0f, viewPortWidth, viewPortHeight)
         batch.draw(knightImg, player.x, player.y, player.width, player.height)
         font.draw(batch, "Health: ${playerState.hitpoints}/${playerState.maxHealth}", viewPortWidth - 100f, viewPortHeight)
         batch.draw(knightWeaponImg, playerState.weapon.x, playerState.weapon.y)
+        ouchTextList.forEach { ouchText -> font.draw(batch, ouchText.ouchText, ouchText.x, ouchText.y) }
         enemies.forEach { enemy -> batch.draw(enemyImg, enemy.x, enemy.y) }
         batch.end()
 
@@ -92,7 +92,7 @@ class ScroogleScreen(private val game: Game,
         moveEnemies(delta)
         checkEnemyCollisionWithWeapon()
         checkEnemyCollisionWithPlayer()
-        moveOuchText()
+        moveOuchText(delta)
     }
 
     private fun checkEnemyCollisionWithWeapon() {
@@ -151,9 +151,9 @@ class ScroogleScreen(private val game: Game,
         viewport.update(width, height, true)
     }
 
-    private fun moveOuchText() {
+    private fun moveOuchText(delta: Float) {
         ouchTextList.forEach { ouchText ->
-            ouchText.y += 200
+            ouchText.y += 200 * delta
         }
     }
 
