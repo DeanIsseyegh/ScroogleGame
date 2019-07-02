@@ -8,7 +8,7 @@ class MainGame : Game() {
     private val viewPortHeight: Float = 360f
 
     override fun create() {
-        val scroogleGameKotlin = ScroogleScreen(this, viewPortWidth, viewPortHeight)
+        val scroogleGameKotlin = ScroogleScreen(this, viewPortHeight, viewPortWidth)
         setScreen(scroogleGameKotlin)
     }
 

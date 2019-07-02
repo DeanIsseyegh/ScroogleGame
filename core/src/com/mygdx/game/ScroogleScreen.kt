@@ -63,7 +63,7 @@ class ScroogleScreen(private val game: Game,
 
     private fun spawnEnemy() {
         val rectangle = Rectangle()
-        rectangle.x = MathUtils.random(0f, viewPortWidth - enemyWidth)
+        rectangle.x = MathUtils.random(0f, enemyWidth - viewPortWidth)
         rectangle.y = viewPortHeight / 2
         rectangle.width = enemyWidth
         rectangle.height = enemyHeight
@@ -79,12 +79,12 @@ class ScroogleScreen(private val game: Game,
 
         batch.projectionMatrix = viewport.camera.combined
         batch.begin()
-        batch.draw(levelBackgroundImg, 0f, 0f, viewPortWidth, viewPortHeight)
         batch.draw(knightImg, player.x, player.y, player.width, player.height)
         font.draw(batch, "Health: ${playerState.hitpoints}/${playerState.maxHealth}", viewPortWidth - 100f, viewPortHeight)
         font.draw(batch, "Enemies Killed: ${playerState.enemiesKilled}", 100f, viewPortHeight)
         batch.draw(knightWeaponImg, playerState.weapon.x, playerState.weapon.y)
         ouchTextList.forEach { ouchText -> font.draw(batch, ouchText.ouchText, ouchText.x, ouchText.y) }
+        batch.draw(levelBackgroundImg, 0f, 0f, viewPortWidth, viewPortHeight)
         enemies.forEach { enemy -> batch.draw(enemyImg, enemy.x, enemy.y) }
         batch.end()
 
@@ -114,9 +114,9 @@ class ScroogleScreen(private val game: Game,
 
     private fun handlePlayerMoveInput(delta: Float) {
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            player.x -= 200 * delta
+            player.y += 200 * delta
         } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            player.x += 200 * delta
+            player.y -= 200 * delta
         }
 
         if (player.x < 0) player.x = 0f
