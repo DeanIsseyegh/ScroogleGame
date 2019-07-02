@@ -82,6 +82,7 @@ class ScroogleScreen(private val game: Game,
         batch.draw(levelBackgroundImg, 0f, 0f, viewPortWidth, viewPortHeight)
         batch.draw(knightImg, player.x, player.y, player.width, player.height)
         font.draw(batch, "Health: ${playerState.hitpoints}/${playerState.maxHealth}", viewPortWidth - 100f, viewPortHeight)
+        font.draw(batch, "Enemies Killed: ${playerState.enemiesKilled}", 100f, viewPortHeight)
         batch.draw(knightWeaponImg, playerState.weapon.x, playerState.weapon.y)
         ouchTextList.forEach { ouchText -> font.draw(batch, ouchText.ouchText, ouchText.x, ouchText.y) }
         enemies.forEach { enemy -> batch.draw(enemyImg, enemy.x, enemy.y) }
@@ -97,7 +98,10 @@ class ScroogleScreen(private val game: Game,
 
     private fun checkEnemyCollisionWithWeapon() {
         val enemyThatsHitWeapon = enemies.find { it.overlaps(playerState.weapon) }
-        enemies.remove(enemyThatsHitWeapon)
+        if (enemyThatsHitWeapon != null) {
+            enemies.remove(enemyThatsHitWeapon)
+            playerState.enemiesKilled += 1
+        }
     }
 
     private fun moveEnemies(delta: Float) {
@@ -139,7 +143,7 @@ class ScroogleScreen(private val game: Game,
             ouchTextList.add(OuchText(player.x))
             if (playerState.hitpoints == 0L) {
                 isDead = true
-                game.screen = GameOverScreen(game, viewPortWidth, viewPortHeight)
+                game.screen = GameOverScreen(game, viewPortWidth, viewPortHeight, playerState)
             }
         }
     }
