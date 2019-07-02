@@ -14,6 +14,7 @@ import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.utils.TimeUtils
 import com.badlogic.gdx.utils.viewport.FitViewport
+import com.mygdx.game.player.PlayerState
 
 
 class ScroogleScreen(private val game: Game,
@@ -23,7 +24,7 @@ class ScroogleScreen(private val game: Game,
     private var lastEnemySpawnTime: Long = 0
     private val batch: SpriteBatch
     private val knightImg: Texture
-    private val knightWeapon: Texture
+    private val knightWeaponImg: Texture
     private val enemyImg: Texture
     private val levelBackgroundImg: Texture
     private val music: Music
@@ -44,7 +45,7 @@ class ScroogleScreen(private val game: Game,
         knightImg = Texture("player/knight/knight_f_idle_anim_f0.png")
         enemyImg = Texture("enemy/bigdemon/big_demon_idle_anim_f0.png")
         levelBackgroundImg = Texture("levels/level1/background.png")
-        knightWeapon = Texture("player/weapons/weapon1.png")
+        knightWeaponImg = Texture("player/weapons/weapon1.png")
         music = Gdx.audio.newMusic(Gdx.files.internal("music/Level1Music.mp3"))
         music.isLooping = true
         val camera = OrthographicCamera(viewPortWidth, viewPortHeight)
@@ -82,15 +83,21 @@ class ScroogleScreen(private val game: Game,
         batch.draw(levelBackgroundImg, 0f, 0f, viewPortWidth, viewPortHeight)
         batch.draw(knightImg, player.x, player.y, player.width, player.height)
         font.draw(batch, "Health: ${playerState.hitpoints}/${playerState.maxHealth}", viewPortWidth - 100f, viewPortHeight)
-        if (playerState.isAttacking) batch.draw(knightWeapon, player.x + player.height, player.y + player.width/2)
+        batch.draw(knightWeaponImg, playerState.weapon.x, playerState.weapon.y)
         enemies.forEach { enemy -> batch.draw(enemyImg, enemy.x, enemy.y) }
         batch.end()
 
-        handlePlayerInput(delta)
-        handePlayerAttack(delta)
+        handlePlayerMoveInput(delta)
+        handlePlayerAttackInput(delta)
         moveEnemies(delta)
-        checkEnemyCollision()
+        checkEnemyCollisionWithWeapon()
+        checkEnemyCollisionWithPlayer()
         moveOuchText()
+    }
+
+    private fun checkEnemyCollisionWithWeapon() {
+        val enemyThatsHitWeapon = enemies.find { it.overlaps(playerState.weapon) }
+        enemies.remove(enemyThatsHitWeapon)
     }
 
     private fun moveEnemies(delta: Float) {
@@ -98,10 +105,10 @@ class ScroogleScreen(private val game: Game,
             enemy.y -= 200 * delta
         }
 
-        enemies = enemies.filter { enemy -> (enemy.y + enemy.height / 2 > 0) }.toMutableList()
+        enemies = enemies.filter { enemy -> (enemy.y + enemy.height / 2) > 0 }.toMutableList()
     }
 
-    private fun handlePlayerInput(delta: Float) {
+    private fun handlePlayerMoveInput(delta: Float) {
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
             player.x -= 200 * delta
         } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
@@ -110,16 +117,20 @@ class ScroogleScreen(private val game: Game,
 
         if (player.x < 0) player.x = 0f
         if (player.x > (viewPortWidth - player.width)) player.x = viewPortWidth - player.width
-        if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-            playerState.isAttacking = true
+    }
+
+    private fun handlePlayerAttackInput(delta: Float) {
+        if (playerState.timeHasBeenAttacking < 0.5 && Gdx.input.isKeyPressed(Input.Keys.A)) {
+            playerState.weapon.x = player.x + player.width / 2
+            playerState.weapon.y = player.y + player.height / 2
+            playerState.timeHasBeenAttacking += delta
+        } else {
+            playerState.weapon.x = -100f
+            playerState.weapon.y = -100f
         }
     }
 
-    private fun handePlayerAttack(delta: Float) {
-
-    }
-
-    private fun checkEnemyCollision() {
+    private fun checkEnemyCollisionWithPlayer() {
         val enemyThatsHitPlayer = enemies.find { it.overlaps(player) }
         if (enemyThatsHitPlayer != null) {
             playerState.hitpoints = playerState.hitpoints - 1
