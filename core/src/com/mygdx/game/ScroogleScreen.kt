@@ -124,24 +124,15 @@ class ScroogleScreen(private val game: Game,
     }
 
     private fun handlePlayerAttackInput(delta: Float) {
-        playerState.timeUntilNextAttackAllowed -= delta
-        if (playerState.timeHasBeenAttacking < 0.5 && playerState.timeUntilNextAttackAllowed <= 0 && Gdx.input.isKeyPressed(Input.Keys.A)) {
+        if (playerState.timeHasBeenAttacking < 0.5 && Gdx.input.isKeyPressed(Input.Keys.A)) {
             playerState.weapon.x = player.x + player.width / 2
             playerState.weapon.y = player.y + player.height / 2
             playerState.timeHasBeenAttacking += delta
+        } else {
+            playerState.timeHasBeenAttacking = 0f
+            playerState.weapon.x = -100f
+            playerState.weapon.y = -100f
         }
-
-        if (playerState.timeHasBeenAttacking > 0 && (!Gdx.input.isKeyPressed(Input.Keys.A) || playerState.timeHasBeenAttacking >= 0.5)) {
-            stopPlayerAttackAndAddEndLag()
-        }
-
-    }
-
-    private fun stopPlayerAttackAndAddEndLag() {
-        playerState.timeUntilNextAttackAllowed = 0.5f
-        playerState.weapon.x = -100f
-        playerState.weapon.y = -100f
-        playerState.timeHasBeenAttacking = 0f
     }
 
     private fun checkEnemyCollisionWithPlayer() {
