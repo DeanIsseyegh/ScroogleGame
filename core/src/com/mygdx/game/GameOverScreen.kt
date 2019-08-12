@@ -13,12 +13,12 @@ import com.mygdx.game.player.PlayerState
 
 class GameOverScreen(private val game: Game,
                      private val viewPortWidth: Float,
-                     private val viewPortHeight: Float) : Screen {
+                     private val viewPortHeight: Float,
+                     private val playerState: PlayerState) : Screen {
 
     var batch: SpriteBatch
     var viewport: FitViewport
     private val font: BitmapFont = BitmapFont()
-    private val playerState: PlayerState = PlayerState()
 
     init {
         batch = SpriteBatch()
@@ -42,8 +42,8 @@ class GameOverScreen(private val game: Game,
         batch.projectionMatrix = viewport.camera.combined
         batch.begin()
         font.draw(batch, "You died and you're shit mate", viewPortWidth / 2 - 100f, viewPortHeight / 2)
-        font.draw(batch, "Press enter to try again", viewPortWidth / 2 - 100f, viewPortHeight / 2 - 100f)
-        font.draw(batch, "You killed ${playerState.enemiesKilled} enemies", viewPortWidth / 2 - 100f, viewPortHeight / 2 - 200f)
+        font.draw(batch, "Press enter to try again", viewPortWidth / 2 - 100f, viewPortHeight / 2 - 50f)
+        font.draw(batch, "You killed ${playerState.enemiesKilled} enemies", viewPortWidth / 2 - 100f, viewPortHeight / 2 - 100f)
         batch.end()
 
         if (Gdx.input.isKeyPressed(Input.Keys.ENTER)) startGame()
