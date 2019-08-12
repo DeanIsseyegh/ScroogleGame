@@ -27,7 +27,7 @@ class ScroogleScreen(private val game: Game,
     private val batch: SpriteBatch
     private val knightAnimation: Animation<TextureRegion>
     private val knightWeaponImg: Texture
-    private val enemyImg: Texture
+    private val demonAnimation: Animation<TextureRegion>
     private val levelBackgroundImg: Texture
     private val music: Music
     private val player: Rectangle
@@ -45,7 +45,7 @@ class ScroogleScreen(private val game: Game,
     init {
         batch = SpriteBatch()
         knightAnimation = KnightAnimation().createKnightAnimation()
-        enemyImg = Texture("enemy/bigdemon/big_demon_idle_anim_f0.png")
+        demonAnimation = DemonAnimation().createAnimiation()
         levelBackgroundImg = Texture("levels/level1/background.png")
         knightWeaponImg = Texture("player/weapons/weapon1.png")
         music = Gdx.audio.newMusic(Gdx.files.internal("music/Level1Music.mp3"))
@@ -90,7 +90,8 @@ class ScroogleScreen(private val game: Game,
         font.draw(batch, "Enemies Killed: ${playerState.enemiesKilled}", 50f, viewPortHeight)
         batch.draw(knightWeaponImg, playerState.weapon.x, playerState.weapon.y)
         ouchTextList.forEach { ouchText -> font.draw(batch, ouchText.ouchText, ouchText.x, ouchText.y) }
-        enemies.forEach { enemy -> batch.draw(enemyImg, enemy.x, enemy.y) }
+        val currentEnemyFrame = demonAnimation.getKeyFrame(stateTime, true)
+        enemies.forEach { enemy -> batch.draw(currentEnemyFrame, enemy.x, enemy.y) }
         batch.end()
 
         handlePlayerMoveInput(delta)
