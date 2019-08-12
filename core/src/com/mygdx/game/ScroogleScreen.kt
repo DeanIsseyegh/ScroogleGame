@@ -8,8 +8,10 @@ import com.badlogic.gdx.audio.Music
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.Texture
+import com.badlogic.gdx.graphics.g2d.Animation
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.utils.TimeUtils
@@ -23,9 +25,9 @@ class ScroogleScreen(private val game: Game,
 
     private var lastEnemySpawnTime: Long = 0
     private val batch: SpriteBatch
-    private val knightImg: Texture
+    private val knightAnimation: Animation<TextureRegion>
     private val knightWeaponImg: Texture
-    private val enemyImg: Texture
+    private val demonAnimation: Animation<TextureRegion>
     private val levelBackgroundImg: Texture
     private val music: Music
     private val player: Rectangle
@@ -42,8 +44,8 @@ class ScroogleScreen(private val game: Game,
 
     init {
         batch = SpriteBatch()
-        knightImg = Texture("player/knight/knight_f_idle_anim_f0.png")
-        enemyImg = Texture("enemy/bigdemon/big_demon_idle_anim_f0.png")
+        knightAnimation = KnightAnimation().createKnightAnimation()
+        demonAnimation = DemonAnimation().createAnimiation()
         levelBackgroundImg = Texture("levels/level1/background.png")
         knightWeaponImg = Texture("player/weapons/weapon1.png")
         music = Gdx.audio.newMusic(Gdx.files.internal("music/Level1Music.mp3"))
@@ -71,6 +73,7 @@ class ScroogleScreen(private val game: Game,
         lastEnemySpawnTime = TimeUtils.millis()
     }
 
+    var stateTime = 0f
     override fun render(delta: Float) {
         viewport.apply()
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
@@ -80,12 +83,15 @@ class ScroogleScreen(private val game: Game,
         batch.projectionMatrix = viewport.camera.combined
         batch.begin()
         batch.draw(levelBackgroundImg, 0f, 0f, viewPortWidth, viewPortHeight)
-        batch.draw(knightImg, player.x, player.y, player.width, player.height)
+        stateTime += delta
+        val currentKnightFrame = knightAnimation.getKeyFrame(stateTime, true)
+        batch.draw(currentKnightFrame, player.x, player.y, player.width, player.height)
         font.draw(batch, "Health: ${playerState.hitpoints}/${playerState.maxHealth}", viewPortWidth - 100f, viewPortHeight)
         font.draw(batch, "Enemies Killed: ${playerState.enemiesKilled}", 50f, viewPortHeight)
         batch.draw(knightWeaponImg, playerState.weapon.x, playerState.weapon.y)
         ouchTextList.forEach { ouchText -> font.draw(batch, ouchText.ouchText, ouchText.x, ouchText.y) }
-        enemies.forEach { enemy -> batch.draw(enemyImg, enemy.x, enemy.y) }
+        val currentEnemyFrame = demonAnimation.getKeyFrame(stateTime, true)
+        enemies.forEach { enemy -> batch.draw(currentEnemyFrame, enemy.x, enemy.y) }
         batch.end()
 
         handlePlayerMoveInput(delta)
