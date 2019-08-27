@@ -28,11 +28,13 @@ class ScroogleScreen(private val game: Game,
     private val knightAnimation: Animation<TextureRegion>
     private val knightWeaponImg: Texture
     private val demonAnimation: Animation<TextureRegion>
+    private val fireballAnimation: Animation<TextureRegion>
     private val levelBackgroundImg: Texture
     private val music: Music
     private val player: Rectangle
     private val playerState: PlayerState = PlayerState()
     private var enemies: MutableList<Rectangle>
+    private var fireballs: MutableList<Rectangle> = mutableListOf()
     private val font: BitmapFont = BitmapFont()
     private val ouchTextList: MutableList<OuchText> = mutableListOf()
 
@@ -46,6 +48,7 @@ class ScroogleScreen(private val game: Game,
         batch = SpriteBatch()
         knightAnimation = KnightAnimation().createKnightAnimation()
         demonAnimation = DemonAnimation().createAnimiation()
+        fireballAnimation = FireballAnimation().createFireballAnimation()
         levelBackgroundImg = Texture("levels/level1/background.png")
         knightWeaponImg = Texture("player/weapons/weapon1.png")
         music = Gdx.audio.newMusic(Gdx.files.internal("music/Level1Music.mp3"))
@@ -91,16 +94,22 @@ class ScroogleScreen(private val game: Game,
         batch.draw(knightWeaponImg, playerState.weapon.x, playerState.weapon.y)
         ouchTextList.forEach { ouchText -> font.draw(batch, ouchText.ouchText, ouchText.x, ouchText.y) }
         val currentEnemyFrame = demonAnimation.getKeyFrame(stateTime, true)
+        val currentFireballFrame = fireballAnimation.getKeyFrame(stateTime, true)
         enemies.forEach { enemy -> batch.draw(currentEnemyFrame, enemy.x, enemy.y) }
+        fireballs.forEach { fireball -> batch.draw(currentFireballFrame, fireball.x, fireball.y)}
+
         batch.end()
 
         handlePlayerMoveInput(delta)
         handlePlayerAttackInput(delta)
+        handlePlayerFireballAttackInput(delta, playerState.fireball.width, playerState.fireball.height)
         moveEnemies(delta)
+        moveFireball(delta)
         checkEnemyCollisionWithWeapon()
         checkEnemyCollisionWithPlayer()
         moveOuchText(delta)
     }
+
 
     private fun checkEnemyCollisionWithWeapon() {
         val enemyThatsHitWeapon = enemies.find { it.overlaps(playerState.weapon) }
@@ -117,6 +126,13 @@ class ScroogleScreen(private val game: Game,
 
         enemies = enemies.filter { enemy -> (enemy.y + enemy.height / 2) > 0 }.toMutableList()
     }
+
+    private fun moveFireball(delta: Float) {
+        fireballs.forEach {
+            it.y += 200 * delta
+        }
+    }
+
 
     private fun handlePlayerMoveInput(delta: Float) {
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
@@ -141,6 +157,15 @@ class ScroogleScreen(private val game: Game,
             stopPlayerAttackAndAddEndLag()
         }
 
+    }
+
+    private fun handlePlayerFireballAttackInput(delta: Float, fireballWidth: Float, fireballHeight: Float) {
+        if (Gdx.input.isKeyPressed(Input.Keys.F)) {
+            val calculateFireballPositionX = FireballPosition().calculateFireballPositionX(fireballWidth, player.width, player.x)
+            fireballs.add(Rectangle(calculateFireballPositionX,player.y,fireballWidth,fireballHeight))
+        }
+
+        //if the fireball collides with the enemy (+1)
     }
 
     private fun stopPlayerAttackAndAddEndLag() {

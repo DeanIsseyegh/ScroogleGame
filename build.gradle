@@ -103,6 +103,8 @@ project(":core") {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
         compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+        // https://mvnrepository.com/artifact/junit/junit
+        compile group: 'junit', name: 'junit', version: '4.12'
     }
 }
 
