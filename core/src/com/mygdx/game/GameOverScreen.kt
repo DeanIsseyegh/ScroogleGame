@@ -41,7 +41,7 @@ class GameOverScreen(private val game: Game,
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
         batch.projectionMatrix = viewport.camera.combined
         batch.begin()
-        font.draw(batch, "You died and you're shit mate", viewPortWidth / 2 - 100f, viewPortHeight / 2)
+        font.draw(batch, "You died.", viewPortWidth / 2 - 100f, viewPortHeight / 2)
         font.draw(batch, "Press enter to try again", viewPortWidth / 2 - 100f, viewPortHeight / 2 - 50f)
         font.draw(batch, "You killed ${playerState.enemiesKilled} enemies", viewPortWidth / 2 - 100f, viewPortHeight / 2 - 100f)
         batch.end()
