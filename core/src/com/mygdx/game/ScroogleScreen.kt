@@ -17,6 +17,7 @@ import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.utils.TimeUtils
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.mygdx.game.player.PlayerState
+import com.mygdx.game.player.PlayerWeapon
 
 
 class ScroogleScreen(private val game: Game,
@@ -34,6 +35,7 @@ class ScroogleScreen(private val game: Game,
     private val player: Rectangle
     private val playerState: PlayerState = PlayerState()
     private var enemies: MutableList<Rectangle>
+    private var fireballs: MutableList<Rectangle>
     private val font: BitmapFont = BitmapFont()
     private val ouchTextList: MutableList<OuchText> = mutableListOf()
 
@@ -62,6 +64,7 @@ class ScroogleScreen(private val game: Game,
         player.x = viewPortWidth / 2 - player.width / 2
         player.y = 20f
         enemies = mutableListOf()
+        fireballs = mutableListOf()
         spawnEnemy()
     }
 
@@ -94,9 +97,19 @@ class ScroogleScreen(private val game: Game,
         handlePlayerAttackInput(delta)
         handlePlayerFireballAttackInput()
         moveEnemies(delta)
+        moveFireballs(delta)
         checkEnemyCollisionWithWeapon()
+        checkEnemyCollisionWithFireball()
         checkEnemyCollisionWithPlayer()
         moveOuchText(delta)
+    }
+
+    private fun checkEnemyCollisionWithFireball() {
+        val enemyThatHitFireball = enemies.find { it.overlaps(playerState.fireball) }
+        if (enemyThatHitFireball != null) {
+            enemies.remove(enemyThatHitFireball)
+            playerState.enemiesKilled += 1
+        }
     }
 
     private fun drawSpritesAndText() {
@@ -113,6 +126,9 @@ class ScroogleScreen(private val game: Game,
         ouchTextList.forEach { ouchText -> font.draw(batch, ouchText.ouchText, ouchText.x, ouchText.y) }
         val currentEnemyFrame = demonAnimation.getKeyFrame(stateTime, true)
         enemies.forEach { enemy -> batch.draw(currentEnemyFrame, enemy.x, enemy.y) }
+
+        val currentFireballFrame = fireballAnimation.getKeyFrame(stateTime, true)
+        batch.draw(currentFireballFrame, playerState.fireball.x , playerState.fireball.y)
     }
 
 
@@ -133,6 +149,11 @@ class ScroogleScreen(private val game: Game,
     }
 
     private fun moveFireballs(delta: Float) {
+//        playerState.fireball.y += 200 * delta;
+
+        fireballs.forEach{ fireball ->
+            fireball.y += 10 * delta;
+        }
         // Move fireballs
     }
 
@@ -164,7 +185,10 @@ class ScroogleScreen(private val game: Game,
 
     private fun handlePlayerFireballAttackInput() {
         if (Gdx.input.isKeyPressed(Input.Keys.F)) {
-            // create fireball
+            playerState.fireball.x = player.x - player.width - playerState.fireball.width / 2
+            playerState.fireball.y = player.y + player.height / 2
+
+            fireballs.add(playerState.fireball)
         }
     }
 
