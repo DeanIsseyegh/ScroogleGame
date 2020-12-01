@@ -34,7 +34,6 @@ class ScroogleScreen(private val game: Game,
     private val player: Rectangle
     private val playerState: PlayerState = PlayerState()
     private var enemies: MutableList<Rectangle>
-    private var fireballs: MutableList<Rectangle> = mutableListOf()
     private val font: BitmapFont = BitmapFont()
     private val ouchTextList: MutableList<OuchText> = mutableListOf()
 
@@ -93,9 +92,8 @@ class ScroogleScreen(private val game: Game,
 
         handlePlayerMoveInput(delta)
         handlePlayerAttackInput(delta)
-        handlePlayerFireballAttackInput(delta, playerState.fireball.width, playerState.fireball.height)
+        handlePlayerFireballAttackInput()
         moveEnemies(delta)
-        moveFireball(delta)
         checkEnemyCollisionWithWeapon()
         checkEnemyCollisionWithPlayer()
         moveOuchText(delta)
@@ -114,9 +112,7 @@ class ScroogleScreen(private val game: Game,
         batch.draw(knightWeaponImg, playerState.weapon.x, playerState.weapon.y)
         ouchTextList.forEach { ouchText -> font.draw(batch, ouchText.ouchText, ouchText.x, ouchText.y) }
         val currentEnemyFrame = demonAnimation.getKeyFrame(stateTime, true)
-        val currentFireballFrame = fireballAnimation.getKeyFrame(stateTime, true)
         enemies.forEach { enemy -> batch.draw(currentEnemyFrame, enemy.x, enemy.y) }
-        fireballs.forEach { fireball -> batch.draw(currentFireballFrame, fireball.x, fireball.y) }
     }
 
 
@@ -136,10 +132,8 @@ class ScroogleScreen(private val game: Game,
         enemies = enemies.filter { enemy -> (enemy.y + enemy.height / 2) > 0 }.toMutableList()
     }
 
-    private fun moveFireball(delta: Float) {
-        fireballs.forEach {
-            it.y += 200 * delta
-        }
+    private fun moveFireballs(delta: Float) {
+        // Move fireballs
     }
 
 
@@ -168,13 +162,10 @@ class ScroogleScreen(private val game: Game,
 
     }
 
-    private fun handlePlayerFireballAttackInput(delta: Float, fireballWidth: Float, fireballHeight: Float) {
+    private fun handlePlayerFireballAttackInput() {
         if (Gdx.input.isKeyPressed(Input.Keys.F)) {
-            val calculateFireballPositionX = FireballPosition().calculateFireballPositionX(fireballWidth, player.width, player.x)
-            fireballs.add(Rectangle(calculateFireballPositionX,player.y,fireballWidth,fireballHeight))
+            // create fireball
         }
-
-        //if the fireball collides with the enemy (+1)
     }
 
     private fun stopPlayerAttackAndAddEndLag() {
