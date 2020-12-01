@@ -92,9 +92,10 @@ class ScroogleScreen(private val game: Game,
 
         handlePlayerMoveInput(delta)
         handlePlayerAttackInput(delta)
-        handlePlayerFireballAttackInput()
+        handlePlayerFireballAttackInput(delta)
         moveEnemies(delta)
         checkEnemyCollisionWithWeapon()
+        checkEnemyCollisionWithFireball()
         checkEnemyCollisionWithPlayer()
         moveOuchText(delta)
     }
@@ -110,6 +111,8 @@ class ScroogleScreen(private val game: Game,
         )
         font.draw(batch, "Enemies Killed: ${playerState.enemiesKilled}", 50f, viewPortHeight)
         batch.draw(knightWeaponImg, playerState.weapon.x, playerState.weapon.y)
+        val currentFireballFrame = fireballAnimation.getKeyFrame(stateTime, true)
+        batch.draw(currentFireballFrame, playerState.fireball.x - 35, playerState.fireball.y)
         ouchTextList.forEach { ouchText -> font.draw(batch, ouchText.ouchText, ouchText.x, ouchText.y) }
         val currentEnemyFrame = demonAnimation.getKeyFrame(stateTime, true)
         enemies.forEach { enemy -> batch.draw(currentEnemyFrame, enemy.x, enemy.y) }
@@ -124,6 +127,14 @@ class ScroogleScreen(private val game: Game,
         }
     }
 
+    private fun checkEnemyCollisionWithFireball() {
+        val enemyThatsHitFireball = enemies.find { it.overlaps(playerState.fireball) }
+        if (enemyThatsHitFireball != null) {
+            enemies.remove(enemyThatsHitFireball)
+            playerState.enemiesKilled += 1
+        }
+    }
+
     private fun moveEnemies(delta: Float) {
         enemies.forEach { enemy ->
             enemy.y -= 200 * delta
@@ -133,7 +144,7 @@ class ScroogleScreen(private val game: Game,
     }
 
     private fun moveFireballs(delta: Float) {
-        // Move fireballs
+        playerState.fireball.y += 200 * delta
     }
 
 
@@ -162,10 +173,12 @@ class ScroogleScreen(private val game: Game,
 
     }
 
-    private fun handlePlayerFireballAttackInput() {
+    private fun handlePlayerFireballAttackInput(delta: Float) {
         if (Gdx.input.isKeyPressed(Input.Keys.F)) {
-            // create fireball
+            playerState.fireball.x = player.x
+            playerState.fireball.y = player.y + player.height / 2
         }
+        moveFireballs(delta);
     }
 
     private fun stopPlayerAttackAndAddEndLag() {
