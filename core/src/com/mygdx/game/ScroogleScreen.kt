@@ -84,20 +84,11 @@ class ScroogleScreen(private val game: Game,
         if (TimeUtils.millis() - lastEnemySpawnTime > 100) spawnEnemy()
 
         batch.projectionMatrix = viewport.camera.combined
+
         batch.begin()
         batch.draw(levelBackgroundImg, 0f, 0f, viewPortWidth, viewPortHeight)
         stateTime += delta
-        val currentKnightFrame = knightAnimation.getKeyFrame(stateTime, true)
-        batch.draw(currentKnightFrame, player.x, player.y, player.width, player.height)
-        font.draw(batch, "Health: ${playerState.hitpoints}/${playerState.maxHealth}", viewPortWidth - 100f, viewPortHeight)
-        font.draw(batch, "Enemies Killed: ${playerState.enemiesKilled}", 50f, viewPortHeight)
-        batch.draw(knightWeaponImg, playerState.weapon.x, playerState.weapon.y)
-        ouchTextList.forEach { ouchText -> font.draw(batch, ouchText.ouchText, ouchText.x, ouchText.y) }
-        val currentEnemyFrame = demonAnimation.getKeyFrame(stateTime, true)
-        val currentFireballFrame = fireballAnimation.getKeyFrame(stateTime, true)
-        enemies.forEach { enemy -> batch.draw(currentEnemyFrame, enemy.x, enemy.y) }
-        fireballs.forEach { fireball -> batch.draw(currentFireballFrame, fireball.x, fireball.y)}
-
+        drawSpritesAndText()
         batch.end()
 
         handlePlayerMoveInput(delta)
@@ -108,6 +99,24 @@ class ScroogleScreen(private val game: Game,
         checkEnemyCollisionWithWeapon()
         checkEnemyCollisionWithPlayer()
         moveOuchText(delta)
+    }
+
+    private fun drawSpritesAndText() {
+        val currentKnightFrame = knightAnimation.getKeyFrame(stateTime, true)
+        batch.draw(currentKnightFrame, player.x, player.y, player.width, player.height)
+        font.draw(
+            batch,
+            "Health: ${playerState.hitpoints}/${playerState.maxHealth}",
+            viewPortWidth - 100f,
+            viewPortHeight
+        )
+        font.draw(batch, "Enemies Killed: ${playerState.enemiesKilled}", 50f, viewPortHeight)
+        batch.draw(knightWeaponImg, playerState.weapon.x, playerState.weapon.y)
+        ouchTextList.forEach { ouchText -> font.draw(batch, ouchText.ouchText, ouchText.x, ouchText.y) }
+        val currentEnemyFrame = demonAnimation.getKeyFrame(stateTime, true)
+        val currentFireballFrame = fireballAnimation.getKeyFrame(stateTime, true)
+        enemies.forEach { enemy -> batch.draw(currentEnemyFrame, enemy.x, enemy.y) }
+        fireballs.forEach { fireball -> batch.draw(currentFireballFrame, fireball.x, fireball.y) }
     }
 
 
