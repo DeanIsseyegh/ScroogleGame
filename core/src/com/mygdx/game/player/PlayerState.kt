@@ -7,6 +7,7 @@ class PlayerState {
     var weapon: PlayerWeapon = PlayerWeapon(-100f, -100f)
     var timeHasBeenAttacking: Float = 0f
     var timeUntilNextAttackAllowed = 0f
+    var timeHasBeenJumping=0f
 
     var enemiesKilled = 0f
 }

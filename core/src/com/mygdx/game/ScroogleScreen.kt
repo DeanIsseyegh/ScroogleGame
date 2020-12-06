@@ -17,6 +17,8 @@ import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.utils.TimeUtils
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.mygdx.game.player.PlayerState
+import java.util.*
+import kotlin.collections.ArrayList
 
 
 class ScroogleScreen(private val game: Game,
@@ -36,12 +38,18 @@ class ScroogleScreen(private val game: Game,
     private var enemies: MutableList<Rectangle>
     private val font: BitmapFont = BitmapFont()
     private val ouchTextList: MutableList<OuchText> = mutableListOf()
-
     var viewport: FitViewport
     private var isDead = false
-
     private val enemyWidth = 32f
     private val enemyHeight = 36f
+
+    private val platformWidth = 163f
+    private val platformHeight = 13f
+    private val platformImg: Texture
+    private val platform1 = Rectangle(((viewPortWidth - platformWidth) / 2), 90f, platformWidth, platformHeight)
+    private val platform2 = Rectangle(0f, 180f, platformWidth, platformHeight)
+    private val platform3 = Rectangle(viewPortWidth - platformWidth, 180f, platformWidth, platformHeight)
+    val platforms = ArrayList<Rectangle>(Arrays.asList(platform1, platform2, platform3))
 
     init {
         batch = SpriteBatch()
@@ -49,6 +57,7 @@ class ScroogleScreen(private val game: Game,
         demonAnimation = DemonAnimation().createAnimiation()
         fireballAnimation = FireballAnimation().createFireballAnimation()
         levelBackgroundImg = Texture("levels/level1/background.png")
+        platformImg = Texture("levels/level1/platform3.png")
         knightWeaponImg = Texture("player/weapons/weapon1.png")
         music = Gdx.audio.newMusic(Gdx.files.internal("music/Level1Music.mp3"))
         music.isLooping = true
@@ -68,7 +77,7 @@ class ScroogleScreen(private val game: Game,
     private fun spawnEnemy() {
         val rectangle = Rectangle()
         rectangle.x = MathUtils.random(0f, viewPortWidth - enemyWidth)
-        rectangle.y = viewPortHeight / 2
+        rectangle.y = viewPortHeight
         rectangle.width = enemyWidth
         rectangle.height = enemyHeight
         enemies.add(rectangle)
@@ -91,9 +100,10 @@ class ScroogleScreen(private val game: Game,
         batch.end()
 
         handlePlayerMoveInput(delta)
+        handlePlayerJumpInput(delta)
         handlePlayerAttackInput(delta)
         handlePlayerFireballAttackInput()
-        moveEnemies(delta)
+//        moveEnemies(delta)
         checkEnemyCollisionWithWeapon()
         checkEnemyCollisionWithPlayer()
         moveOuchText(delta)
@@ -103,13 +113,14 @@ class ScroogleScreen(private val game: Game,
         val currentKnightFrame = knightAnimation.getKeyFrame(stateTime, true)
         batch.draw(currentKnightFrame, player.x, player.y, player.width, player.height)
         font.draw(
-            batch,
-            "Health: ${playerState.hitpoints}/${playerState.maxHealth}",
-            viewPortWidth - 100f,
-            viewPortHeight
+                batch,
+                "Health: ${playerState.hitpoints}/${playerState.maxHealth}",
+                viewPortWidth - 100f,
+                viewPortHeight
         )
         font.draw(batch, "Enemies Killed: ${playerState.enemiesKilled}", 50f, viewPortHeight)
         batch.draw(knightWeaponImg, playerState.weapon.x, playerState.weapon.y)
+        platforms.forEach { platform -> batch.draw(platformImg, platform.x, platform.y) }
         ouchTextList.forEach { ouchText -> font.draw(batch, ouchText.ouchText, ouchText.x, ouchText.y) }
         val currentEnemyFrame = demonAnimation.getKeyFrame(stateTime, true)
         enemies.forEach { enemy -> batch.draw(currentEnemyFrame, enemy.x, enemy.y) }
@@ -146,6 +157,29 @@ class ScroogleScreen(private val game: Game,
 
         if (player.x < 0) player.x = 0f
         if (player.x > (viewPortWidth - player.width)) player.x = viewPortWidth - player.width
+    }
+
+    private fun handlePlayerJumpInput(delta: Float) {
+        if (Gdx.input.isKeyPressed(Input.Keys.SPACE) && playerState.timeHasBeenJumping < 0.4 || playerState.timeHasBeenJumping > 0 && playerState.timeHasBeenJumping < 0.4) {
+            player.y += 300 * delta
+            playerState.timeHasBeenJumping += delta
+        } else if (!isPlayerOnPLatform() && player.y >= 5f) {
+            player.y -= 300 * delta
+            if (player.y <= 5) {
+                playerState.timeHasBeenJumping = 0f
+            }
+        }
+    }
+
+    private fun isPlayerOnPLatform(): Boolean {
+        platforms.forEach { platform ->
+            if ((player.x > platform.x - player.width && player.x < platform.x + platform.width) && ((player.y > platform.y - platform.height / 2 && player.y < platform.y + platform.height / 2) || player.y == platform.y + platform.height)) {
+                player.y = platform.y + platform.height
+                playerState.timeHasBeenJumping = 0f
+                return true;
+            }
+        }
+        return false
     }
 
     private fun handlePlayerAttackInput(delta: Float) {
