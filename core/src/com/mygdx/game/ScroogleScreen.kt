@@ -51,11 +51,18 @@ class ScroogleScreen(private val game: Game,
     private val platform3 = Rectangle(viewPortWidth - platformWidth, 180f, platformWidth, platformHeight)
     val platforms = ArrayList<Rectangle>(Arrays.asList(platform1, platform2, platform3))
 
+    private val barrelAnimation : Animation<TextureRegion>
+    private val barrelWidth = 30f
+    private val barrelheight= 50f
+    private val barrel=Rectangle(((viewPortWidth-barrelWidth) / 2), 90f+platform1.height, barrelWidth, barrelheight)
+
     init {
         batch = SpriteBatch()
         knightAnimation = KnightAnimation().createKnightAnimation()
         demonAnimation = DemonAnimation().createAnimiation()
         fireballAnimation = FireballAnimation().createFireballAnimation()
+//        barrelAnimation= ExplosionAnimation().createExplosionAnimation()
+        barrelAnimation= ToxicBarrelAnimation().createToxicBarrelAnimation()
         levelBackgroundImg = Texture("levels/level1/background.png")
         platformImg = Texture("levels/level1/platform3.png")
         knightWeaponImg = Texture("player/weapons/weapon1.png")
@@ -66,8 +73,10 @@ class ScroogleScreen(private val game: Game,
         viewport = FitViewport(viewPortWidth, viewPortHeight, camera)
         viewport.apply()
         player = Rectangle()
-        player.width = 16f * 1.5f
-        player.height = 28f * 1.5f
+//        player.width = 16f * 1.5f
+        player.width = 30f
+//        player.height = 28f * 1.5f
+        player.height = 45f
         player.x = viewPortWidth / 2 - player.width / 2
         player.y = 20f
         enemies = mutableListOf()
@@ -112,6 +121,8 @@ class ScroogleScreen(private val game: Game,
     private fun drawSpritesAndText() {
         val currentKnightFrame = knightAnimation.getKeyFrame(stateTime, true)
         batch.draw(currentKnightFrame, player.x, player.y, player.width, player.height)
+        val currentToxicBarrelFrame = barrelAnimation.getKeyFrame(stateTime,true)
+        batch.draw(currentToxicBarrelFrame,barrel.x,barrel.y,barrelWidth,barrelheight)
         font.draw(
                 batch,
                 "Health: ${playerState.hitpoints}/${playerState.maxHealth}",
