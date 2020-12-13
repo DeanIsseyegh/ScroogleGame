@@ -30,7 +30,6 @@ class ScroogleScreen(private val game: Game,
     private val knightAnimation: Animation<TextureRegion>
     private val knightWeaponImg: Texture
     private val demonAnimation: Animation<TextureRegion>
-    private val fireballAnimation: Animation<TextureRegion>
     private val levelBackgroundImg: Texture
     private val music: Music
     private val player: Rectangle
@@ -52,15 +51,20 @@ class ScroogleScreen(private val game: Game,
     val platforms = ArrayList<Rectangle>(Arrays.asList(platform1, platform2, platform3))
 
     private val barrelAnimation: Animation<TextureRegion>
-    private val barrelWidth = 30f
-    private val barrelheight = 50f
-    private val barrel = Rectangle(((viewPortWidth - barrelWidth) / 2), 90f + platform1.height, barrelWidth, barrelheight)
-
+    private val barrelWidth = 20f
+    private val barrelHeight = 35f
+    //    private val barrel = Rectangle(((viewPortWidth - barrelWidth) / 2), 90f + platform1.height, barrelWidth, barrelheight)
+    private var barrels: MutableList<Barrel> = mutableListOf()
 
     private val orbWidth = 15f
     private val orbHeight = 15f
     private val orbWeaponImg: Texture
     private var orbs: MutableList<Orb> = mutableListOf()
+
+    private val fireballWidth = 100f
+    private val fireballHeight = 100f
+    private val fireballAnimation: Animation<TextureRegion>
+    private var fireballs: MutableList<Fireball>
 
 
     init {
@@ -89,6 +93,8 @@ class ScroogleScreen(private val game: Game,
         player.y = 20f
         enemies = mutableListOf()
         orbs = mutableListOf()
+        fireballs = mutableListOf()
+        barrels = mutableListOf()
         spawnEnemy()
     }
 
@@ -105,6 +111,26 @@ class ScroogleScreen(private val game: Game,
             enemy.direction = "right"
         }
         lastEnemySpawnTime = TimeUtils.millis()
+    }
+
+    private fun spawnBarrel() {
+        if (playerState.enemiesKilled>0&& playerState.enemiesKilled.rem(10f) ==0f) {
+            System.out.println("barrel")
+            val barrel = Barrel()
+            barrel.x = MathUtils.random(0f, viewPortWidth - barrelWidth)
+            barrel.y = viewPortHeight
+            barrel.width = barrelWidth
+            barrel.height = barrelHeight
+            barrels.add(barrel)
+        }
+    }
+
+    private fun moveBarrel(delta: Float) {
+
+        barrels.forEach { barrel ->
+            if (barrel.y > barrel.height / 4 && !isRectangleOnPLatform(barrel)) {
+                barrel.moveBarrel(delta)
+            } }
     }
 
     var stateTime = 0f
@@ -126,20 +152,26 @@ class ScroogleScreen(private val game: Game,
         handlePlayerJumpInput(delta)
         handlePlayerAttackInput(delta)
         handlePlayerOrbAttackInput(delta)
-        handlePlayerFireballAttackInput()
+        handlePlayerFireballAttackInput(delta)
+
         moveOrb(delta)
+        moveFireballs(delta)
         moveEnemies(delta)
+        moveBarrel(delta)
+
         checkEnemyCollisionWithWeapon()
         checkEnemyCollisionWithProjectile()
         checkEnemyCollisionWithPlayer()
+        checkEnemyCollisionWithRefuelBarrel()
         moveOuchText(delta)
+
     }
 
     private fun drawSpritesAndText() {
         val currentKnightFrame = knightAnimation.getKeyFrame(stateTime, true)
         batch.draw(currentKnightFrame, player.x, player.y, player.width, player.height)
         val currentToxicBarrelFrame = barrelAnimation.getKeyFrame(stateTime, true)
-        batch.draw(currentToxicBarrelFrame, barrel.x, barrel.y, barrelWidth, barrelheight)
+        barrels.forEach { barrel -> batch.draw(currentToxicBarrelFrame, barrel.x, barrel.y, barrel.width, barrel.height) }
         font.draw(
                 batch,
                 "Health: ${playerState.hitpoints}/${playerState.maxHealth}",
@@ -149,6 +181,8 @@ class ScroogleScreen(private val game: Game,
         font.draw(batch, "Enemies Killed: ${playerState.enemiesKilled}", 50f, viewPortHeight)
         batch.draw(knightWeaponImg, playerState.weapon.x, playerState.weapon.y)
         orbs.forEach { orb -> batch.draw(orbWeaponImg, orb.x, orb.y, orb.width, orb.height) }
+        val currentFireballFrame = fireballAnimation.getKeyFrame(stateTime, true)
+        fireballs.forEach { fireball -> batch.draw(currentFireballFrame, fireball.x, fireball.y, fireballWidth, fireballHeight) }
         platforms.forEach { platform -> batch.draw(platformImg, platform.x, platform.y) }
         ouchTextList.forEach { ouchText -> font.draw(batch, ouchText.ouchText, ouchText.x, ouchText.y) }
         val currentEnemyFrame = demonAnimation.getKeyFrame(stateTime, true)
@@ -161,6 +195,7 @@ class ScroogleScreen(private val game: Game,
         if (enemyThatsHitWeapon != null) {
             enemies.remove(enemyThatsHitWeapon)
             playerState.enemiesKilled += 1
+            spawnBarrel()
         }
     }
 
@@ -187,7 +222,10 @@ class ScroogleScreen(private val game: Game,
     }
 
     private fun moveFireballs(delta: Float) {
-        // Move fireballs
+        fireballs.forEach { fireball ->
+            fireball.moveFireball(delta)
+        }
+
     }
 
 
@@ -240,9 +278,9 @@ class ScroogleScreen(private val game: Game,
     }
 
     private fun handlePlayerOrbAttackInput(delta: Float) {
-        playerState.orbDelay -=1
-        if ( playerState.orbDelay<0 &&Gdx.input.isKeyPressed(Input.Keys.S)) {
-            playerState.orbDelay=10
+        playerState.orbDelay -= 1
+        if (playerState.orbDelay < 0 && Gdx.input.isKeyPressed(Input.Keys.S)) {
+            playerState.orbDelay = 10f
             val leftOrb = Orb()
             leftOrb.x = player.x
             leftOrb.y = player.y + player.height / 2
@@ -267,22 +305,50 @@ class ScroogleScreen(private val game: Game,
     }
 
     private fun checkEnemyCollisionWithProjectile() {
-        orbs.forEach {orb->
+        orbs.forEach { orb ->
             val enemyThatsHitProjectile = enemies.find { it.overlaps(orb) }
             if (enemyThatsHitProjectile != null) {
                 playerState.enemiesKilled += 1
                 enemies.remove(enemyThatsHitProjectile)
+                spawnBarrel()
 //                orbs.remove (orb)
             }
 //            else if(orb.x>viewPortWidth||orb.x<viewPortWidth){
 //                orbs.remove(orb)
 //            }
         }
+        fireballs.forEach { fireball ->
+            val enemyThatsHitProjectile = enemies.find { it.overlaps(fireball) }
+            if (enemyThatsHitProjectile != null) {
+                playerState.enemiesKilled += 1
+                enemies.remove(enemyThatsHitProjectile)
+                spawnBarrel()
+//                orbs.remove (fireball)
+            }
+//            else if(orb.x>viewPortWidth||orb.x<viewPortWidth){
+//                orbs.remove(fireball)
+//            }
+        }
     }
 
-    private fun handlePlayerFireballAttackInput() {
-        if (Gdx.input.isKeyPressed(Input.Keys.F)) {
-            // create fireball
+    private fun handlePlayerFireballAttackInput(delta: Float) {
+        if (Gdx.input.isKeyPressed(Input.Keys.F) && playerState.fireballFuel > 0) {
+            playerState.fireballFuel -= delta
+            var fireball = Fireball()
+            fireball.x = player.x - player.width - fireball.width
+            fireball.y = player.y
+            fireball.width = fireballWidth
+            fireball.height = fireballHeight
+            fireballs.add(fireball)
+        }
+    }
+
+    private fun checkEnemyCollisionWithRefuelBarrel() {
+        barrels.forEach { barrel ->
+            if (player.overlaps(barrel)) {
+                barrel.x=-100f
+                playerState.fireballFuel=3f
+            }
         }
     }
 
