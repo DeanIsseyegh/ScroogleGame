@@ -66,14 +66,19 @@ class ScroogleScreen(private val game: Game,
     private val fireballAnimation: Animation<TextureRegion>
     private var fireballs: MutableList<Fireball>
 
+    private val lakituAnimation: Animation<TextureRegion>
+    private val lakitu: Lakitu
+    private val lakituWidth = 80f
+    private val lakituHeight= 95f
+
 
     init {
         batch = SpriteBatch()
         knightAnimation = KnightAnimation().createKnightAnimation()
         demonAnimation = DemonAnimation().createAnimiation()
         fireballAnimation = FireballAnimation().createFireballAnimation()
-//        barrelAnimation= ExplosionAnimation().createExplosionAnimation()
         barrelAnimation = ToxicBarrelAnimation().createToxicBarrelAnimation()
+        lakituAnimation = LakituAnimation().createLakituAnimation()
         levelBackgroundImg = Texture("levels/level1/background.png")
         platformImg = Texture("levels/level1/platform3.png")
         knightWeaponImg = Texture("player/weapons/weapon1.png")
@@ -96,6 +101,12 @@ class ScroogleScreen(private val game: Game,
         fireballs = mutableListOf()
         barrels = mutableListOf()
         spawnEnemy()
+        lakitu= Lakitu()
+        lakitu.width= lakituWidth
+        lakitu.height=lakituHeight
+        lakitu.x=viewPortWidth/2-lakituWidth/2
+        lakitu.y=viewPortHeight-lakituHeight
+
     }
 
     private fun spawnEnemy() {
@@ -158,6 +169,7 @@ class ScroogleScreen(private val game: Game,
         moveFireballs(delta)
         moveEnemies(delta)
         moveBarrel(delta)
+        moveLakitu(delta)
 
         checkEnemyCollisionWithWeapon()
         checkEnemyCollisionWithProjectile()
@@ -178,7 +190,9 @@ class ScroogleScreen(private val game: Game,
                 viewPortWidth - 100f,
                 viewPortHeight
         )
-        font.draw(batch, "Enemies Killed: ${playerState.enemiesKilled}", 50f, viewPortHeight)
+        font.draw(batch, "Enemies Killed: ${playerState.enemiesKilled}", 10f, viewPortHeight)
+        font.draw(batch, "Boss Health: ${lakitu.bossHealth}", 10f, viewPortHeight-25f)
+        font.draw(batch, "flamethrower fuel: ${playerState.fireballFuel/3*100}+%", 10f, viewPortHeight-50f)
         batch.draw(knightWeaponImg, playerState.weapon.x, playerState.weapon.y)
         orbs.forEach { orb -> batch.draw(orbWeaponImg, orb.x, orb.y, orb.width, orb.height) }
         val currentFireballFrame = fireballAnimation.getKeyFrame(stateTime, true)
@@ -187,6 +201,8 @@ class ScroogleScreen(private val game: Game,
         ouchTextList.forEach { ouchText -> font.draw(batch, ouchText.ouchText, ouchText.x, ouchText.y) }
         val currentEnemyFrame = demonAnimation.getKeyFrame(stateTime, true)
         enemies.forEach { enemy -> batch.draw(currentEnemyFrame, enemy.x, enemy.y) }
+        val currentLakituFrame = lakituAnimation.getKeyFrame(stateTime,true)
+        batch.draw(currentLakituFrame,lakitu.x,lakitu.y,lakitu.width,lakitu.height)
     }
 
 
@@ -323,11 +339,17 @@ class ScroogleScreen(private val game: Game,
                 playerState.enemiesKilled += 1
                 enemies.remove(enemyThatsHitProjectile)
                 spawnBarrel()
-//                orbs.remove (fireball)
+//                fireballs.remove (fireball)
             }
-//            else if(orb.x>viewPortWidth||orb.x<viewPortWidth){
-//                orbs.remove(fireball)
-//            }
+            val bossThatHitsProjectile = lakitu.overlaps(fireball)
+            if (bossThatHitsProjectile&&lakitu.bossHealth>0){
+                fireball.y+=500f
+                lakitu.bossHealth= lakitu.bossHealth-1
+            }
+            else if(lakitu.bossHealth<=0) {
+                lakitu.y+=1000f
+            }
+//
         }
     }
 
@@ -370,6 +392,16 @@ class ScroogleScreen(private val game: Game,
                 game.screen = GameOverScreen(game, viewPortWidth, viewPortHeight, playerState)
             }
         }
+    }
+
+    private fun moveLakitu(delta: Float){
+        if(lakitu.x<lakitu.width/4){
+            lakitu.direction="right"
+        }
+        else if(lakitu.x>viewPortWidth-lakitu.width*1.25){
+            lakitu.direction="left"
+        }
+        lakitu.moveLakitu(delta)
     }
 
     override fun dispose() {
