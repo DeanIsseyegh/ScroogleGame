@@ -35,7 +35,7 @@ class ScroogleScreen(private val game: Game,
     private val music: Music
     private val player: Rectangle
     private val playerState: PlayerState = PlayerState()
-    private var enemies: MutableList<Rectangle>
+    private var enemies: MutableList<Enemy>
     private val font: BitmapFont = BitmapFont()
     private val ouchTextList: MutableList<OuchText> = mutableListOf()
     var viewport: FitViewport
@@ -51,10 +51,10 @@ class ScroogleScreen(private val game: Game,
     private val platform3 = Rectangle(viewPortWidth - platformWidth, 180f, platformWidth, platformHeight)
     val platforms = ArrayList<Rectangle>(Arrays.asList(platform1, platform2, platform3))
 
-    private val barrelAnimation : Animation<TextureRegion>
+    private val barrelAnimation: Animation<TextureRegion>
     private val barrelWidth = 30f
-    private val barrelheight= 50f
-    private val barrel=Rectangle(((viewPortWidth-barrelWidth) / 2), 90f+platform1.height, barrelWidth, barrelheight)
+    private val barrelheight = 50f
+    private val barrel = Rectangle(((viewPortWidth - barrelWidth) / 2), 90f + platform1.height, barrelWidth, barrelheight)
 
     init {
         batch = SpriteBatch()
@@ -62,7 +62,7 @@ class ScroogleScreen(private val game: Game,
         demonAnimation = DemonAnimation().createAnimiation()
         fireballAnimation = FireballAnimation().createFireballAnimation()
 //        barrelAnimation= ExplosionAnimation().createExplosionAnimation()
-        barrelAnimation= ToxicBarrelAnimation().createToxicBarrelAnimation()
+        barrelAnimation = ToxicBarrelAnimation().createToxicBarrelAnimation()
         levelBackgroundImg = Texture("levels/level1/background.png")
         platformImg = Texture("levels/level1/platform3.png")
         knightWeaponImg = Texture("player/weapons/weapon1.png")
@@ -84,12 +84,17 @@ class ScroogleScreen(private val game: Game,
     }
 
     private fun spawnEnemy() {
-        val rectangle = Rectangle()
-        rectangle.x = MathUtils.random(0f, viewPortWidth - enemyWidth)
-        rectangle.y = viewPortHeight
-        rectangle.width = enemyWidth
-        rectangle.height = enemyHeight
-        enemies.add(rectangle)
+        val enemy = Enemy()
+        enemy.x = MathUtils.random(0f, viewPortWidth - enemyWidth)
+        enemy.y = viewPortHeight
+        enemy.width = enemyWidth
+        enemy.height = enemyHeight
+        enemies.add(enemy)
+        if (enemy.x > viewPortWidth / 2) {
+            enemy.direction = "left"
+        } else {
+            enemy.direction = "right"
+        }
         lastEnemySpawnTime = TimeUtils.millis()
     }
 
@@ -98,7 +103,7 @@ class ScroogleScreen(private val game: Game,
         viewport.apply()
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
 
-        if (TimeUtils.millis() - lastEnemySpawnTime > 100) spawnEnemy()
+        if (TimeUtils.millis() - lastEnemySpawnTime > 1000) spawnEnemy()
 
         batch.projectionMatrix = viewport.camera.combined
 
@@ -112,7 +117,7 @@ class ScroogleScreen(private val game: Game,
         handlePlayerJumpInput(delta)
         handlePlayerAttackInput(delta)
         handlePlayerFireballAttackInput()
-//        moveEnemies(delta)
+        moveEnemies(delta)
         checkEnemyCollisionWithWeapon()
         checkEnemyCollisionWithPlayer()
         moveOuchText(delta)
@@ -121,8 +126,8 @@ class ScroogleScreen(private val game: Game,
     private fun drawSpritesAndText() {
         val currentKnightFrame = knightAnimation.getKeyFrame(stateTime, true)
         batch.draw(currentKnightFrame, player.x, player.y, player.width, player.height)
-        val currentToxicBarrelFrame = barrelAnimation.getKeyFrame(stateTime,true)
-        batch.draw(currentToxicBarrelFrame,barrel.x,barrel.y,barrelWidth,barrelheight)
+        val currentToxicBarrelFrame = barrelAnimation.getKeyFrame(stateTime, true)
+        batch.draw(currentToxicBarrelFrame, barrel.x, barrel.y, barrelWidth, barrelheight)
         font.draw(
                 batch,
                 "Health: ${playerState.hitpoints}/${playerState.maxHealth}",
@@ -148,10 +153,28 @@ class ScroogleScreen(private val game: Game,
 
     private fun moveEnemies(delta: Float) {
         enemies.forEach { enemy ->
-            enemy.y -= 200 * delta
+            if (!isRectangleOnPLatform(enemy) && enemy.y > enemy.height / 4) {
+                enemy.y -= 200 * delta
+            }
+            else if (enemy.direction == "right") {
+                enemy.x += 100f * delta
+            } else {
+                enemy.x -= 100f * delta
+            }
+
         }
 
         enemies = enemies.filter { enemy -> (enemy.y + enemy.height / 2) > 0 }.toMutableList()
+    }
+
+    private fun isRectangleOnPLatform(rectangle: Rectangle): Boolean {
+        platforms.forEach { platform ->
+            if ((rectangle.x > platform.x - rectangle.width && rectangle.x < platform.x + platform.width) && ((rectangle.y > platform.y - platform.height / 2 && rectangle.y < platform.y + platform.height / 2) || rectangle.y == platform.y + platform.height)) {
+                rectangle.y = platform.y + platform.height
+                return true;
+            }
+        }
+        return false
     }
 
     private fun moveFireballs(delta: Float) {
