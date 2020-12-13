@@ -56,6 +56,13 @@ class ScroogleScreen(private val game: Game,
     private val barrelheight = 50f
     private val barrel = Rectangle(((viewPortWidth - barrelWidth) / 2), 90f + platform1.height, barrelWidth, barrelheight)
 
+
+    private val orbWidth = 15f
+    private val orbHeight = 15f
+    private val orbWeaponImg: Texture
+    private var orbs: MutableList<Orb> = mutableListOf()
+
+
     init {
         batch = SpriteBatch()
         knightAnimation = KnightAnimation().createKnightAnimation()
@@ -66,6 +73,7 @@ class ScroogleScreen(private val game: Game,
         levelBackgroundImg = Texture("levels/level1/background.png")
         platformImg = Texture("levels/level1/platform3.png")
         knightWeaponImg = Texture("player/weapons/weapon1.png")
+        orbWeaponImg = Texture("orbs_pack/sphere_light_blue.png")
         music = Gdx.audio.newMusic(Gdx.files.internal("music/Level1Music.mp3"))
         music.isLooping = true
         val camera = OrthographicCamera(viewPortWidth, viewPortHeight)
@@ -80,6 +88,7 @@ class ScroogleScreen(private val game: Game,
         player.x = viewPortWidth / 2 - player.width / 2
         player.y = 20f
         enemies = mutableListOf()
+        orbs = mutableListOf()
         spawnEnemy()
     }
 
@@ -116,9 +125,12 @@ class ScroogleScreen(private val game: Game,
         handlePlayerMoveInput(delta)
         handlePlayerJumpInput(delta)
         handlePlayerAttackInput(delta)
+        handlePlayerOrbAttackInput(delta)
         handlePlayerFireballAttackInput()
+        moveOrb(delta)
         moveEnemies(delta)
         checkEnemyCollisionWithWeapon()
+        checkEnemyCollisionWithProjectile()
         checkEnemyCollisionWithPlayer()
         moveOuchText(delta)
     }
@@ -136,6 +148,7 @@ class ScroogleScreen(private val game: Game,
         )
         font.draw(batch, "Enemies Killed: ${playerState.enemiesKilled}", 50f, viewPortHeight)
         batch.draw(knightWeaponImg, playerState.weapon.x, playerState.weapon.y)
+        orbs.forEach { orb -> batch.draw(orbWeaponImg, orb.x, orb.y, orb.width, orb.height) }
         platforms.forEach { platform -> batch.draw(platformImg, platform.x, platform.y) }
         ouchTextList.forEach { ouchText -> font.draw(batch, ouchText.ouchText, ouchText.x, ouchText.y) }
         val currentEnemyFrame = demonAnimation.getKeyFrame(stateTime, true)
@@ -155,13 +168,9 @@ class ScroogleScreen(private val game: Game,
         enemies.forEach { enemy ->
             if (!isRectangleOnPLatform(enemy) && enemy.y > enemy.height / 4) {
                 enemy.y -= 200 * delta
-            }
-            else if (enemy.direction == "right") {
-                enemy.x += 100f * delta
             } else {
-                enemy.x -= 100f * delta
+                enemy.moveEnemy(delta)
             }
-
         }
 
         enemies = enemies.filter { enemy -> (enemy.y + enemy.height / 2) > 0 }.toMutableList()
@@ -228,6 +237,47 @@ class ScroogleScreen(private val game: Game,
             stopPlayerAttackAndAddEndLag()
         }
 
+    }
+
+    private fun handlePlayerOrbAttackInput(delta: Float) {
+        playerState.orbDelay -=1
+        if ( playerState.orbDelay<0 &&Gdx.input.isKeyPressed(Input.Keys.S)) {
+            playerState.orbDelay=10
+            val leftOrb = Orb()
+            leftOrb.x = player.x
+            leftOrb.y = player.y + player.height / 2
+            leftOrb.width = orbWidth
+            leftOrb.height = orbHeight
+            leftOrb.direction = "left"
+            val rightOrb = Orb()
+            rightOrb.x = player.x + player.width
+            rightOrb.y = player.y + player.height / 2
+            rightOrb.width = orbWidth
+            rightOrb.height = orbHeight
+            rightOrb.direction = "right"
+            orbs.add(leftOrb)
+            orbs.add(rightOrb)
+        }
+    }
+
+    private fun moveOrb(delta: Float) {
+        orbs.forEach { orb ->
+            orb.moveOrb(delta)
+        }
+    }
+
+    private fun checkEnemyCollisionWithProjectile() {
+        orbs.forEach {orb->
+            val enemyThatsHitProjectile = enemies.find { it.overlaps(orb) }
+            if (enemyThatsHitProjectile != null) {
+                playerState.enemiesKilled += 1
+                enemies.remove(enemyThatsHitProjectile)
+//                orbs.remove (orb)
+            }
+//            else if(orb.x>viewPortWidth||orb.x<viewPortWidth){
+//                orbs.remove(orb)
+//            }
+        }
     }
 
     private fun handlePlayerFireballAttackInput() {

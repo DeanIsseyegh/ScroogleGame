@@ -8,6 +8,7 @@ class PlayerState {
     var timeHasBeenAttacking: Float = 0f
     var timeUntilNextAttackAllowed = 0f
     var timeHasBeenJumping=0f
+    var orbDelay = 5
 
     var enemiesKilled = 0f
 }
