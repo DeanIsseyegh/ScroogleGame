@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion
 class LakituAnimation {
 
     private val idleFrames: Array<TextureRegion>
+    private val angryLakituFrames: Array<TextureRegion>
 
     init {
         // Load the sprite sheet as a Texture
@@ -30,10 +31,33 @@ class LakituAnimation {
             }
         }
         idleFrames = idleFramesTmp.filterNotNull().toTypedArray()
+
+
+
+
+        val AngryLakituSheet = Texture(Gdx.files.internal("enemy/boss1/angry-lakitu.png"))
+
+        val tmp2 = TextureRegion.split(AngryLakituSheet,
+                AngryLakituSheet.getWidth() / 1,
+                AngryLakituSheet.getHeight() / 4)
+
+        // Place the regions into a 1D array in the correct order, starting from the top
+        // left, going across first. The Animation constructor requires a 1D array.
+        val angryLakituFramestmp: Array<TextureRegion?> = arrayOfNulls(1 * 4)
+        var index2 = 0
+        for (k in 0 until 4) {
+            for (l in 0 until 1) {
+                angryLakituFramestmp[index2++] = tmp2[k][l]
+            }
+        }
+        angryLakituFrames = angryLakituFramestmp.filterNotNull().toTypedArray()
     }
 
     fun createLakituAnimation(): Animation<TextureRegion> {
         return Animation(0.1f, *idleFrames)
     }
 
+    fun createAngryLakituAnimation(): Animation<TextureRegion> {
+        return Animation(0.1f, *angryLakituFrames)
+    }
 }
