@@ -164,11 +164,19 @@ class ScroogleScreen(private val game: Game,
         batch.end()
 
         handlePlayerMoveInput(delta)
-        handlePlayerJumpInput(delta)
-        handleMirrorJumpInput(delta)
+        handleCharacterOutOfScreen(player)
+        handleCharacterOutOfScreen(mirror)
+
+
+        handleCharacterJumpInput(delta, player, playerState)
+        handleCharacterJumpInput(delta, mirror, mirrorState)
         handlePlayerAttackInput(delta)
-        handlePlayerOrbAttackInput(delta)
+
+        handleCharacterOrbAttackInput(player, playerState)
+        handleCharacterOrbAttackInput(mirror, mirrorState)
+
         handlePlayerFireballAttackInput(delta)
+
         handleMirrorAbilityInput(delta)
 
         moveOrb(delta)
@@ -252,7 +260,6 @@ class ScroogleScreen(private val game: Game,
 
     }
 
-
     private fun handlePlayerMoveInput(delta: Float) {
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
             player.x -= 200 * delta
@@ -262,50 +269,30 @@ class ScroogleScreen(private val game: Game,
             mirror.x -= 200 * delta
         }
 
-        if (player.x < 0) player.x = 0f
-        if (player.x > (viewPortWidth - player.width)) player.x = viewPortWidth - player.width
     }
 
-    private fun handlePlayerJumpInput(delta: Float) {
-        if (Gdx.input.isKeyPressed(Input.Keys.SPACE) && playerState.timeHasBeenJumping < 0.4 || playerState.timeHasBeenJumping > 0 && playerState.timeHasBeenJumping < 0.4) {
-            player.y += 300 * delta
-            playerState.timeHasBeenJumping += delta
-        } else if (!isPlayerOnPlatform() && player.y >= 5f) {
-            player.y -= 300 * delta
-            if (player.y <= 5) {
-                playerState.timeHasBeenJumping = 0f
+    private fun handleCharacterOutOfScreen(character: Rectangle){
+        if (character.x < 0) character.x = 0f
+        if (character.x > (viewPortWidth - character.width)) character.x = viewPortWidth - character.width
+    }
+
+    private fun handleCharacterJumpInput(delta: Float, character: Rectangle, characterState: PlayerState) {
+        if (Gdx.input.isKeyPressed(Input.Keys.SPACE) && characterState.timeHasBeenJumping < 0.4 || characterState.timeHasBeenJumping > 0 && characterState.timeHasBeenJumping < 0.4) {
+            character.y += 300 * delta
+            characterState.timeHasBeenJumping += delta
+        } else if (!isPlayerOnPlatform(character, characterState) && character.y >= 5f) {
+            character.y -= 300 * delta
+            if (character.y <= 5) {
+                characterState.timeHasBeenJumping = 0f
             }
         }
     }
 
-    private fun handleMirrorJumpInput(delta: Float) {
-        if (Gdx.input.isKeyPressed(Input.Keys.SPACE) && mirrorState.timeHasBeenJumping < 0.4 || mirrorState.timeHasBeenJumping > 0 && mirrorState.timeHasBeenJumping < 0.4) {
-            mirror.y += 300 * delta
-            mirrorState.timeHasBeenJumping += delta
-        } else if (!isMirrorOnPlatform() && mirror.y >= 5f) {
-            mirror.y -= 300 * delta
-            if (mirror.y <= 5) {
-                mirrorState.timeHasBeenJumping = 0f
-            }
-        }
-    }
-
-    private fun isPlayerOnPlatform(): Boolean {
+    private fun isPlayerOnPlatform(character: Rectangle, characterState: PlayerState): Boolean {
         platforms.forEach { platform ->
-            if ((player.x > platform.x - player.width && player.x < platform.x + platform.width) && ((player.y > platform.y - platform.height / 2 && player.y < platform.y + platform.height / 2) || player.y == platform.y + platform.height)) {
-                player.y = platform.y + platform.height
-                playerState.timeHasBeenJumping = 0f
-                return true;
-            }
-        }
-        return false
-    }
-
-    private fun isMirrorOnPlatform(): Boolean {
-        platforms.forEach { platform ->
-            if ((mirror.x > platform.x - mirror.width && mirror.x < platform.x + platform.width) && ((mirror.y > platform.y - platform.height / 2 && mirror.y < platform.y + platform.height / 2) || mirror.y == platform.y + platform.height)) {
-                mirror.y = platform.y + platform.height
-                mirrorState.timeHasBeenJumping = 0f
+            if ((character.x > platform.x - character.width && character.x < platform.x + platform.width) && ((character.y > platform.y - platform.height / 2 && character.y < platform.y + platform.height / 2) || character.y == platform.y + platform.height)) {
+                character.y = platform.y + platform.height
+                characterState.timeHasBeenJumping = 0f
                 return true;
             }
         }
@@ -326,19 +313,19 @@ class ScroogleScreen(private val game: Game,
 
     }
 
-    private fun handlePlayerOrbAttackInput(delta: Float) {
-        playerState.orbDelay -= 1
-        if (playerState.orbDelay < 0 && Gdx.input.isKeyPressed(Input.Keys.S)) {
-            playerState.orbDelay = 10f
+    private fun handleCharacterOrbAttackInput(character: Rectangle, characterState: PlayerState) {
+        characterState.orbDelay -= 1
+        if (characterState.orbDelay < 0 && Gdx.input.isKeyPressed(Input.Keys.S)) {
+            characterState.orbDelay = 10f
             val leftOrb = Orb()
-            leftOrb.x = player.x
-            leftOrb.y = player.y + player.height / 2
+            leftOrb.x = character.x
+            leftOrb.y = character.y + character.height / 2
             leftOrb.width = orbWidth
             leftOrb.height = orbHeight
             leftOrb.direction = "left"
             val rightOrb = Orb()
-            rightOrb.x = player.x + player.width
-            rightOrb.y = player.y + player.height / 2
+            rightOrb.x = character.x + character.width
+            rightOrb.y = character.y + character.height / 2
             rightOrb.width = orbWidth
             rightOrb.height = orbHeight
             rightOrb.direction = "right"
