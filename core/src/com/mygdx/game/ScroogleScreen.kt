@@ -28,12 +28,15 @@ class ScroogleScreen(private val game: Game,
     private var lastEnemySpawnTime: Long = 0
     private val batch: SpriteBatch
     private val knightAnimation: Animation<TextureRegion>
+    private val mirrorAnimation: Animation<TextureRegion>
     private val knightWeaponImg: Texture
     private val demonAnimation: Animation<TextureRegion>
     private val levelBackgroundImg: Texture
     private val music: Music
     private val player: Rectangle
+    private val mirror: Rectangle
     private val playerState: PlayerState = PlayerState()
+    private val mirrorState: PlayerState = PlayerState()
     private var enemies: MutableList<Enemy>
     private val font: BitmapFont = BitmapFont()
     private val ouchTextList: MutableList<OuchText> = mutableListOf()
@@ -72,6 +75,7 @@ class ScroogleScreen(private val game: Game,
     init {
         batch = SpriteBatch()
         knightAnimation = KnightAnimation().createKnightAnimation()
+        mirrorAnimation = MirrorAnimation().createMirrorAnimation()
         demonAnimation = DemonAnimation().createAnimiation()
         fireballAnimation = FireballAnimation().createFireballAnimation()
         barrelAnimation = ToxicBarrelAnimation().createToxicBarrelAnimation()
@@ -92,6 +96,11 @@ class ScroogleScreen(private val game: Game,
         player.height = 45f
         player.x = viewPortWidth / 2 - player.width / 2
         player.y = 20f
+        mirror = Rectangle()
+        mirror.width = 30f
+        mirror.height = 45f
+        mirror.x = viewPortWidth / 2 - player.width / 2
+        mirror.y = -1000f
         enemies = mutableListOf()
         orbs = mutableListOf()
         fireballs = mutableListOf()
@@ -156,9 +165,11 @@ class ScroogleScreen(private val game: Game,
 
         handlePlayerMoveInput(delta)
         handlePlayerJumpInput(delta)
+        handleMirrorJumpInput(delta)
         handlePlayerAttackInput(delta)
         handlePlayerOrbAttackInput(delta)
         handlePlayerFireballAttackInput(delta)
+        handleMirrorAbilityInput(delta)
 
         moveOrb(delta)
         moveFireballs(delta)
@@ -177,6 +188,8 @@ class ScroogleScreen(private val game: Game,
     private fun drawSpritesAndText() {
         val currentKnightFrame = knightAnimation.getKeyFrame(stateTime, true)
         batch.draw(currentKnightFrame, player.x, player.y, player.width, player.height)
+        val currentMirrorFrame = mirrorAnimation.getKeyFrame(stateTime, true)
+        batch.draw(currentMirrorFrame, mirror.x, mirror.y, player.width, player.height)
         val currentToxicBarrelFrame = barrelAnimation.getKeyFrame(stateTime, true)
         barrels.forEach { barrel -> batch.draw(currentToxicBarrelFrame, barrel.x, barrel.y, barrel.width, barrel.height) }
         font.draw(
@@ -243,8 +256,10 @@ class ScroogleScreen(private val game: Game,
     private fun handlePlayerMoveInput(delta: Float) {
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
             player.x -= 200 * delta
+            mirror.x += 200 * delta
         } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
             player.x += 200 * delta
+            mirror.x -= 200 * delta
         }
 
         if (player.x < 0) player.x = 0f
@@ -255,7 +270,7 @@ class ScroogleScreen(private val game: Game,
         if (Gdx.input.isKeyPressed(Input.Keys.SPACE) && playerState.timeHasBeenJumping < 0.4 || playerState.timeHasBeenJumping > 0 && playerState.timeHasBeenJumping < 0.4) {
             player.y += 300 * delta
             playerState.timeHasBeenJumping += delta
-        } else if (!isPlayerOnPLatform() && player.y >= 5f) {
+        } else if (!isPlayerOnPlatform() && player.y >= 5f) {
             player.y -= 300 * delta
             if (player.y <= 5) {
                 playerState.timeHasBeenJumping = 0f
@@ -263,11 +278,34 @@ class ScroogleScreen(private val game: Game,
         }
     }
 
-    private fun isPlayerOnPLatform(): Boolean {
+    private fun handleMirrorJumpInput(delta: Float) {
+        if (Gdx.input.isKeyPressed(Input.Keys.SPACE) && mirrorState.timeHasBeenJumping < 0.4 || mirrorState.timeHasBeenJumping > 0 && mirrorState.timeHasBeenJumping < 0.4) {
+            mirror.y += 300 * delta
+            mirrorState.timeHasBeenJumping += delta
+        } else if (!isMirrorOnPlatform() && mirror.y >= 5f) {
+            mirror.y -= 300 * delta
+            if (mirror.y <= 5) {
+                mirrorState.timeHasBeenJumping = 0f
+            }
+        }
+    }
+
+    private fun isPlayerOnPlatform(): Boolean {
         platforms.forEach { platform ->
             if ((player.x > platform.x - player.width && player.x < platform.x + platform.width) && ((player.y > platform.y - platform.height / 2 && player.y < platform.y + platform.height / 2) || player.y == platform.y + platform.height)) {
                 player.y = platform.y + platform.height
                 playerState.timeHasBeenJumping = 0f
+                return true;
+            }
+        }
+        return false
+    }
+
+    private fun isMirrorOnPlatform(): Boolean {
+        platforms.forEach { platform ->
+            if ((mirror.x > platform.x - mirror.width && mirror.x < platform.x + platform.width) && ((mirror.y > platform.y - platform.height / 2 && mirror.y < platform.y + platform.height / 2) || mirror.y == platform.y + platform.height)) {
+                mirror.y = platform.y + platform.height
+                mirrorState.timeHasBeenJumping = 0f
                 return true;
             }
         }
@@ -381,6 +419,14 @@ class ScroogleScreen(private val game: Game,
             fireball.width = fireballWidth
             fireball.height = fireballHeight
             fireballs.add(fireball)
+        }
+    }
+
+    private fun handleMirrorAbilityInput(delta: Float) {
+//        playerState.timeUntilNextMirrorAbility -= delta
+        if (Gdx.input.isKeyPressed(Input.Keys.D)) {
+            mirror.y = player.y
+            mirror.x = player.x + player.width
         }
     }
 
