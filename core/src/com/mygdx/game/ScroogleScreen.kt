@@ -142,7 +142,7 @@ class ScroogleScreen(private val game: Game,
     private fun moveBarrel(delta: Float) {
 
         barrels.forEach { barrel ->
-            if (barrel.y > barrel.height / 4 && !isRectangleOnPLatform(barrel)) {
+            if (barrel.y > barrel.height / 4 && !isRectangleOnPlatform(barrel)) {
                 barrel.moveBarrel(delta)
             }
         }
@@ -163,7 +163,8 @@ class ScroogleScreen(private val game: Game,
         drawSpritesAndText()
         batch.end()
 
-        handlePlayerMoveInput(delta)
+        handleCharacterMoveInput(delta, player, 1f)
+        handleCharacterMoveInput(delta, mirror, -1f)
         handleCharacterOutOfScreen(player)
         handleCharacterOutOfScreen(mirror)
 
@@ -233,7 +234,7 @@ class ScroogleScreen(private val game: Game,
 
     private fun moveEnemies(delta: Float) {
         enemies.forEach { enemy ->
-            if (!isRectangleOnPLatform(enemy) && enemy.y > enemy.height / 4) {
+            if (!isRectangleOnPlatform(enemy) && enemy.y > enemy.height / 4) {
                 enemy.y -= 200 * delta
             } else {
                 enemy.moveEnemy(delta)
@@ -243,7 +244,7 @@ class ScroogleScreen(private val game: Game,
         enemies = enemies.filter { enemy -> (enemy.y + enemy.height / 2) > 0 }.toMutableList()
     }
 
-    private fun isRectangleOnPLatform(rectangle: Rectangle): Boolean {
+    private fun isRectangleOnPlatform(rectangle: Rectangle): Boolean {
         platforms.forEach { platform ->
             if ((rectangle.x > platform.x - rectangle.width && rectangle.x < platform.x + platform.width) && ((rectangle.y > platform.y - platform.height / 2 && rectangle.y < platform.y + platform.height / 2) || rectangle.y == platform.y + platform.height)) {
                 rectangle.y = platform.y + platform.height
@@ -257,18 +258,14 @@ class ScroogleScreen(private val game: Game,
         fireballs.forEach { fireball ->
             fireball.moveFireball(delta)
         }
-
     }
 
-    private fun handlePlayerMoveInput(delta: Float) {
+    private fun handleCharacterMoveInput(delta: Float, character: Rectangle, modifier: Float) {
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            player.x -= 200 * delta
-            mirror.x += 200 * delta
+            character.x -= (200 * delta) * modifier
         } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            player.x += 200 * delta
-            mirror.x -= 200 * delta
+            character.x += (200 * delta) * modifier
         }
-
     }
 
     private fun handleCharacterOutOfScreen(character: Rectangle){
