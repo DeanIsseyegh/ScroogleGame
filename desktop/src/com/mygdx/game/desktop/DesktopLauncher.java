@@ -1,5 +1,6 @@
 package com.mygdx.game.desktop;
 
+import com.badlogic.drop.Drop;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 import com.mygdx.game.MainGame;
@@ -10,7 +11,7 @@ public class DesktopLauncher {
 		config.title = "Scroogle";
 		config.width = 800;
 		config.height = 480;
-		new LwjglApplication(new MainGame(), config);
+		new LwjglApplication(new Drop(), config);
 	}
 
 }

@@ -1,4 +1,4 @@
-package com.mygdx.game
+package com.mygdx.game.screens
 
 import com.badlogic.gdx.Game
 import com.badlogic.gdx.Gdx
@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.mygdx.game.player.PlayerState
+import com.mygdx.game.screens.ScroogleScreen
 
 class GameOverScreen(private val game: Game,
                      private val viewPortWidth: Float,

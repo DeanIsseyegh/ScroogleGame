@@ -2,9 +2,7 @@ package com.mygdx.game
 
 import com.badlogic.gdx.graphics.g2d.Animation
 import com.badlogic.gdx.graphics.g2d.TextureRegion
-import com.badlogic.gdx.math.MathUtils
-import com.mygdx.game.ToxicBarrelAnimation
-import java.awt.Rectangle
+import com.mygdx.game.animations.LakituAnimation
 
 class Lakitu() : com.badlogic.gdx.math.Rectangle() {
     var bossHealth = 1000f

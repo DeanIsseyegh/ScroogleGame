@@ -1,4 +1,4 @@
-package com.mygdx.game
+package com.mygdx.game.screens
 
 import com.badlogic.gdx.Game
 import com.badlogic.gdx.Gdx
@@ -16,6 +16,11 @@ import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.utils.TimeUtils
 import com.badlogic.gdx.utils.viewport.FitViewport
+import com.mygdx.game.*
+import com.mygdx.game.animations.DemonAnimation
+import com.mygdx.game.animations.FireballAnimation
+import com.mygdx.game.animations.KnightAnimation
+import com.mygdx.game.animations.ToxicBarrelAnimation
 import com.mygdx.game.player.PlayerState
 import java.util.*
 import kotlin.collections.ArrayList
@@ -340,7 +345,7 @@ class ScroogleScreen(private val game: Game,
             if (bossThatHitsProjectile && lakitu.bossHealth > 0) {
                 shrinkBoss()
                 fireball.y += 500f
-                lakitu.bossHealth = lakitu.bossHealth - 1
+                lakitu.bossHealth = lakitu.bossHealth - 5
                 if (lakitu.bossHealth < 600) {
                     lakitu.turnAngry()
                     lakitu.movementType = "angry"
@@ -354,20 +359,8 @@ class ScroogleScreen(private val game: Game,
 
     private fun shrinkBoss() {
         if (lakitu.bossHealth == 900f) {
-            lakitu.width = (0.9f * lakitu.width)
-            lakitu.height = (0.9f * lakitu.height)
-        } else if (lakitu.bossHealth == 700f) {
-            lakitu.width = (0.7f * lakitu.width)
-            lakitu.height = (0.7f * lakitu.height)
-        } else if (lakitu.bossHealth == 500f) {
-            lakitu.width = (0.5f * lakitu.width)
-            lakitu.height = (0.5f * lakitu.height)
-        } else if (lakitu.bossHealth == 300f) {
-            lakitu.width = (0.3f * lakitu.width)
-            lakitu.height = (0.3f * lakitu.height)
-        } else if (lakitu.bossHealth == 100f) {
-            lakitu.width = (0.1f * lakitu.width)
-            lakitu.height = (0.1f * lakitu.height)
+            lakitu.width = (lakitu.bossHealth/1000f * lakitu.width)
+            lakitu.height = (lakitu.bossHealth/1000f * lakitu.height)
         }
     }
 
@@ -400,6 +393,7 @@ class ScroogleScreen(private val game: Game,
         playerState.timeHasBeenAttacking = 0f
     }
 
+    //need a period of time without damage
     private fun checkEnemyCollisionWithPlayer() {
         val enemyThatsHitPlayer = enemies.find { it.overlaps(player) }
         if (enemyThatsHitPlayer != null) {
