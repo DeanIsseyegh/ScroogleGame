@@ -27,7 +27,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 
-class ScroogleScreen(private val game: Game,
+class ScroogleScreenLevel2(private val game: Game,
                      private val viewPortWidth: Float,
                      private val viewPortHeight: Float) : Screen {
 
@@ -86,7 +86,7 @@ class ScroogleScreen(private val game: Game,
         demonAnimation = DemonAnimation().createAnimiation()
         fireballAnimation = FireballAnimation().createFireballAnimation()
         barrelAnimation = ToxicBarrelAnimation().createToxicBarrelAnimation()
-        levelBackgroundImg = Texture("levels/level1/background.png")
+        levelBackgroundImg = Texture("levels/level2/background.png")
         platformImg = Texture("levels/level1/platform3.png")
         knightWeaponImg = Texture("player/weapons/weapon1.png")
         knightHealthImg = Texture("player/1-heart.png")

@@ -6,6 +6,7 @@ import com.badlogic.gdx.Screen
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.utils.ScreenUtils
 import com.mygdx.game.screens.ScroogleScreen
+import com.mygdx.game.screens.ScroogleScreenLevel2
 
 class MainMenuScreen(private val game: Drop):Screen {
 
@@ -16,7 +17,7 @@ class MainMenuScreen(private val game: Drop):Screen {
     }
 
     override fun render(delta: Float) {
-        ScreenUtils.clear(0f, 0f, 0.2f, 1f);
+//        ScreenUtils.clear(0f, 0f, 0.2f, 1f);
 
         camera.update();
         game.batch?.projectionMatrix = camera.combined;
@@ -32,7 +33,7 @@ class MainMenuScreen(private val game: Drop):Screen {
             dispose();
         }
         if (Gdx.input.isKeyJustPressed(8)){ //8=the number 1
-            game.screen = ScroogleScreen(game, 600f, 360f)
+            game.screen = ScroogleScreenLevel2(game, 600f, 360f)
         }
     }
 
