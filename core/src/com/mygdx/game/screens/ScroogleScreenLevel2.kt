@@ -174,7 +174,6 @@ class ScroogleScreenLevel2(private val game: Game,
         handlePlayerOrbAttackInput(delta)
         handlePlayerFireballAttackInput(delta)
         reduceInvulnerableTime(delta)
-        println(playerState.invulnerableTime)
 
         moveOrb(delta)
         moveFireballs(delta)

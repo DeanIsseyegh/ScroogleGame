@@ -174,7 +174,6 @@ class ScroogleScreen(private val game: Game,
         handlePlayerOrbAttackInput(delta)
         handlePlayerFireballAttackInput(delta)
         reduceInvulnerableTime(delta)
-        println(playerState.invulnerableTime)
 
         moveOrb(delta)
         moveFireballs(delta)
@@ -447,6 +446,8 @@ class ScroogleScreen(private val game: Game,
                 }
             } else if (lakitu.overlaps(player)) {
                 playerState.hitpoints -= 1
+                knightHealth.removeAt(playerState.hitpoints.toInt())
+                playerState.invulnerableTime = 2f
                 if (playerState.hitpoints == 0L) {
                     isDead = true
                     game.screen = GameOverScreen(game, viewPortWidth, viewPortHeight, playerState)
