@@ -10,7 +10,6 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.mygdx.game.player.PlayerState
-import com.mygdx.game.screens.ScroogleScreen
 
 class GameOverScreen(private val game: Game,
                      private val viewPortWidth: Float,
@@ -53,7 +52,7 @@ class GameOverScreen(private val game: Game,
 
     private fun startGame() {
         if (level == "level-1") {
-            game.screen = ScroogleScreen(game, viewPortWidth, viewPortHeight)
+            game.screen = ScroogleScreenLevel1(game, viewPortWidth, viewPortHeight)
         }
         if (level == "level-2") {
             game.screen = ScroogleScreenLevel2(game, viewPortWidth, viewPortHeight)

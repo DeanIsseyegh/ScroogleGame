@@ -8,10 +8,8 @@ import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
-import com.badlogic.gdx.math.Rectangle
-import com.mygdx.game.Fireball
 import com.mygdx.game.SelectionBox
-import com.mygdx.game.screens.ScroogleScreen
+import com.mygdx.game.screens.ScroogleScreenLevel1
 import com.mygdx.game.screens.ScroogleScreenLevel2
 
 class MainMenuScreen(private val game: Drop) : Screen {
@@ -54,7 +52,6 @@ class MainMenuScreen(private val game: Drop) : Screen {
                     selectionBox.x, selectionBox.y,
                     selectionBox.width, selectionBox.height)
         }
-        print(selectionBoxes.toString() + "--------------")
         batch.end();
 
 
@@ -68,7 +65,7 @@ class MainMenuScreen(private val game: Drop) : Screen {
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
             if (selectionBoxes.get(0).y > 200) {
-                game.screen = ScroogleScreen(game, 600f, 360f)
+                game.screen = ScroogleScreenLevel1(game, 600f, 360f)
             }
             if (selectionBoxes.get(0).y < 200) {
                 game.screen = ScroogleScreenLevel2(game, 600f, 360f)

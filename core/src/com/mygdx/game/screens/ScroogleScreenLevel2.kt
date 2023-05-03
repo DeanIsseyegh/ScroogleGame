@@ -28,8 +28,8 @@ import kotlin.collections.ArrayList
 
 
 class ScroogleScreenLevel2(private val game: Game,
-                     private val viewPortWidth: Float,
-                     private val viewPortHeight: Float) : Screen {
+                           private val viewPortWidth: Float,
+                           private val viewPortHeight: Float) : Screen {
 
     private var lastEnemySpawnTime: Long = 0
     private val batch: SpriteBatch
@@ -38,7 +38,6 @@ class ScroogleScreenLevel2(private val game: Game,
     private val demonAnimation: Animation<TextureRegion>
     private val levelBackgroundImg: Texture
     private val music: Music
-    private val player: Rectangle
     private val playerState: PlayerState = PlayerState()
     private var enemies: MutableList<Enemy>
     private val font: BitmapFont = BitmapFont()
@@ -97,13 +96,7 @@ class ScroogleScreenLevel2(private val game: Game,
         camera.setToOrtho(false)
         viewport = FitViewport(viewPortWidth, viewPortHeight, camera)
         viewport.apply()
-        player = Rectangle()
-//        player.width = 16f * 1.5f
-        player.width = 30f
-//        player.height = 28f * 1.5f
-        player.height = 45f
-        player.x = viewPortWidth / 2 - player.width / 2
-        player.y = 20f
+        playerState.x = viewPortWidth / 2 - playerState.width / 2
         enemies = mutableListOf()
         knightHealth = mutableListOf()
         orbs = mutableListOf()
@@ -192,7 +185,7 @@ class ScroogleScreenLevel2(private val game: Game,
 
     private fun drawSpritesAndText() {
         val currentKnightFrame = knightAnimation.getKeyFrame(stateTime, true)
-        batch.draw(currentKnightFrame, player.x, player.y, player.width, player.height)
+        batch.draw(currentKnightFrame, playerState.x, playerState.y, playerState.width, playerState.height)
         val currentToxicBarrelFrame = barrelAnimation.getKeyFrame(stateTime, true)
         barrels.forEach { barrel -> batch.draw(currentToxicBarrelFrame, barrel.x, barrel.y, barrel.width, barrel.height) }
         font.draw(
@@ -221,8 +214,8 @@ class ScroogleScreenLevel2(private val game: Game,
         var i = 0
         while (i < playerState.hitpoints) {
             var health = PlayerHealth()
-            health.xposition = ((i + 1f) * 10f)
-            health.yposition = viewPortHeight - 75f
+            health.x = ((i + 1f) * 10f)
+            health.y = viewPortHeight - 75f
             knightHealth.add(health)
             i++
         }
@@ -231,7 +224,7 @@ class ScroogleScreenLevel2(private val game: Game,
     private fun drawKnightHealth() {
         var i = 0
         while (i < playerState.hitpoints) {
-            knightHealth.forEach { knightHealth -> batch.draw(knightHealthImg, knightHealth.xposition, knightHealth.yposition, knightHealthWidth, knightHealthHeight) }
+            knightHealth.forEach { knightHealth -> batch.draw(knightHealthImg, knightHealth.x, knightHealth.y, knightHealthWidth, knightHealthHeight) }
             i++
         }
     }
@@ -284,22 +277,19 @@ class ScroogleScreenLevel2(private val game: Game,
 
     private fun handlePlayerMoveInput(delta: Float) {
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            player.x -= 200 * delta
+            playerState.moveLeft(delta)
         } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            player.x += 200 * delta
+            playerState.moveRight(delta, viewPortWidth)
         }
 
-        if (player.x < 0) player.x = 0f
-        if (player.x > (viewPortWidth - player.width)) player.x = viewPortWidth - player.width
     }
 
     private fun handlePlayerJumpInput(delta: Float) {
         if (Gdx.input.isKeyPressed(Input.Keys.SPACE) && playerState.timeHasBeenJumping < 0.4 || playerState.timeHasBeenJumping > 0 && playerState.timeHasBeenJumping < 0.4) {
-            player.y += 300 * delta
-            playerState.timeHasBeenJumping += delta
-        } else if (!isPlayerOnPLatform() && player.y >= 5f) {
-            player.y -= 300 * delta
-            if (player.y <= 5) {
+            playerState.jump(delta)
+        } else if (!isPlayerOnPLatform() && playerState.y >= 5f) {
+            playerState.falling(delta)
+            if (playerState.y <= 5) {
                 playerState.timeHasBeenJumping = 0f
             }
         }
@@ -307,8 +297,8 @@ class ScroogleScreenLevel2(private val game: Game,
 
     private fun isPlayerOnPLatform(): Boolean {
         platforms.forEach { platform ->
-            if ((player.x > platform.x - player.width && player.x < platform.x + platform.width) && ((player.y > platform.y - platform.height / 2 && player.y < platform.y + platform.height / 2) || player.y == platform.y + platform.height)) {
-                player.y = platform.y + platform.height
+            if ((playerState.x > platform.x - playerState.width && playerState.x < platform.x + platform.width) && ((playerState.y > platform.y - platform.height / 2 && playerState.y < platform.y + platform.height / 2) || playerState.y == platform.y + platform.height)) {
+                playerState.y = platform.y + platform.height
                 playerState.timeHasBeenJumping = 0f
                 return true;
             }
@@ -319,8 +309,8 @@ class ScroogleScreenLevel2(private val game: Game,
     private fun handlePlayerAttackInput(delta: Float) {
         playerState.timeUntilNextAttackAllowed -= delta
         if (playerState.timeHasBeenAttacking < 0.5 && playerState.timeUntilNextAttackAllowed <= 0 && Gdx.input.isKeyPressed(Input.Keys.A)) {
-            playerState.weapon.x = player.x + player.width / 2
-            playerState.weapon.y = player.y + player.height / 2
+            playerState.weapon.x = playerState.x + playerState.width / 2
+            playerState.weapon.y = playerState.y + playerState.height / 2
             playerState.timeHasBeenAttacking += delta
         }
 
@@ -335,14 +325,14 @@ class ScroogleScreenLevel2(private val game: Game,
         if (playerState.orbDelay < 0 && Gdx.input.isKeyPressed(Input.Keys.S)) {
             playerState.orbDelay = 10f
             val leftOrb = Orb()
-            leftOrb.x = player.x
-            leftOrb.y = player.y + player.height / 2
+            leftOrb.x = playerState.x
+            leftOrb.y = playerState.y + playerState.height / 2
             leftOrb.width = orbWidth
             leftOrb.height = orbHeight
             leftOrb.direction = "left"
             val rightOrb = Orb()
-            rightOrb.x = player.x + player.width
-            rightOrb.y = player.y + player.height / 2
+            rightOrb.x = playerState.x + playerState.width
+            rightOrb.y = playerState.y + playerState.height / 2
             rightOrb.width = orbWidth
             rightOrb.height = orbHeight
             rightOrb.direction = "right"
@@ -406,8 +396,8 @@ class ScroogleScreenLevel2(private val game: Game,
         if (Gdx.input.isKeyPressed(Input.Keys.F) && playerState.fireballFuel > 0) {
             playerState.fireballFuel -= delta
             var fireball = Fireball()
-            fireball.x = player.x - player.width - fireball.width
-            fireball.y = player.y
+            fireball.x = playerState.x - playerState.width - fireball.width
+            fireball.y = playerState.y
             fireball.width = fireballWidth
             fireball.height = fireballHeight
             fireballs.add(fireball)
@@ -416,7 +406,7 @@ class ScroogleScreenLevel2(private val game: Game,
 
     private fun checkEnemyCollisionWithRefuelBarrel() {
         barrels.forEach { barrel ->
-            if (player.overlaps(barrel)) {
+            if (playerState.overlaps(barrel)) {
                 barrel.x = -100f
                 playerState.fireballFuel = 3f
             }
@@ -432,26 +422,33 @@ class ScroogleScreenLevel2(private val game: Game,
 
     //need a period of time without damage
     private fun checkEnemyCollisionWithPlayer() {
-        val enemyThatsHitPlayer = enemies.find { it.overlaps(player) }
+        val enemyThatsHitPlayer = enemies.find { it.overlaps(playerState) }
         if (playerState.invulnerableTime <= 0f) {
             if (enemyThatsHitPlayer != null) {
-                playerState.hitpoints = playerState.hitpoints - 1
-                knightHealth.removeAt(playerState.hitpoints.toInt())
-                playerState.invulnerableTime = 2f
+                playerIsHit()
                 enemies.remove(enemyThatsHitPlayer)
-                ouchTextList.add(OuchText(player.x))
+                ouchTextList.add(OuchText(playerState.x))
                 if (playerState.hitpoints == 0L) {
-                    isDead = true
-                    game.screen = GameOverScreen(game, viewPortWidth, viewPortHeight, playerState,"level-2")
+                    gameOver()
                 }
-            } else if (lakitu.overlaps(player)) {
-                playerState.hitpoints -= 1
+            } else if (lakitu.overlaps(playerState)) {
+                playerIsHit()
                 if (playerState.hitpoints == 0L) {
-                    isDead = true
-                    game.screen = GameOverScreen(game, viewPortWidth, viewPortHeight, playerState,"level-2")
+                    gameOver()
                 }
             }
         }
+    }
+
+    private fun playerIsHit() {
+        playerState.hitpoints = playerState.hitpoints - 1
+        knightHealth.removeAt(playerState.hitpoints.toInt())
+        playerState.invulnerableTime = 2f
+    }
+
+    private fun gameOver() {
+        isDead = true
+        game.screen = GameOverScreen(game, viewPortWidth, viewPortHeight, playerState, "level-2")
     }
 
     private fun moveLakitu(delta: Float) {
