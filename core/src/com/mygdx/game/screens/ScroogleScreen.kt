@@ -153,7 +153,7 @@ class ScroogleScreen(private val game: Game,
         }
     }
 
-    var stateTime = 0f
+    var  stateTime = 0f
     override fun render(delta: Float) {
         viewport.apply()
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
