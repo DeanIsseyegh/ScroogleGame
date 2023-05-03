@@ -15,7 +15,8 @@ import com.mygdx.game.screens.ScroogleScreen
 class GameOverScreen(private val game: Game,
                      private val viewPortWidth: Float,
                      private val viewPortHeight: Float,
-                     private val playerState: PlayerState) : Screen {
+                     private val playerState: PlayerState,
+                     private val level: String) : Screen {
 
     var batch: SpriteBatch
     var viewport: FitViewport
@@ -51,7 +52,12 @@ class GameOverScreen(private val game: Game,
     }
 
     private fun startGame() {
-        game.screen = ScroogleScreen(game, viewPortWidth, viewPortHeight)
+        if (level == "level-1") {
+            game.screen = ScroogleScreen(game, viewPortWidth, viewPortHeight)
+        }
+        if (level == "level-2") {
+            game.screen = ScroogleScreenLevel2(game, viewPortWidth, viewPortHeight)
+        }
     }
 
     override fun pause() {

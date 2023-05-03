@@ -442,13 +442,13 @@ class ScroogleScreenLevel2(private val game: Game,
                 ouchTextList.add(OuchText(player.x))
                 if (playerState.hitpoints == 0L) {
                     isDead = true
-                    game.screen = GameOverScreen(game, viewPortWidth, viewPortHeight, playerState)
+                    game.screen = GameOverScreen(game, viewPortWidth, viewPortHeight, playerState,"level-2")
                 }
             } else if (lakitu.overlaps(player)) {
                 playerState.hitpoints -= 1
                 if (playerState.hitpoints == 0L) {
                     isDead = true
-                    game.screen = GameOverScreen(game, viewPortWidth, viewPortHeight, playerState)
+                    game.screen = GameOverScreen(game, viewPortWidth, viewPortHeight, playerState,"level-2")
                 }
             }
         }
