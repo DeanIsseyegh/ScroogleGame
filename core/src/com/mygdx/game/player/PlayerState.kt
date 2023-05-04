@@ -3,7 +3,7 @@ package com.mygdx.game.player
 import com.badlogic.gdx.math.Rectangle
 
 class PlayerState : Rectangle() {
-    val maxHealth: Long = 3
+    val maxHealth: Long = 10
     var hitpoints: Long = maxHealth
     var invulnerableTime = 0f
 

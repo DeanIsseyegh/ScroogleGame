@@ -23,6 +23,7 @@ import com.mygdx.game.animations.KnightAnimation
 import com.mygdx.game.animations.ToxicBarrelAnimation
 import com.mygdx.game.player.PlayerHealth
 import com.mygdx.game.player.PlayerState
+import com.mygdx.game.screens.common.levelMechanics.PlayerMechanics
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -77,6 +78,7 @@ class ScroogleScreenLevel1(private val game: Game,
     private val knightHealthImg: Texture
 
     private val lakitu: Lakitu
+    private var playerMechanics = PlayerMechanics()
 
 
     init {
@@ -273,33 +275,11 @@ class ScroogleScreenLevel1(private val game: Game,
     }
 
     private fun handlePlayerMoveInput(delta: Float) {
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            playerState.moveLeft(delta)
-        } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            playerState.moveRight(delta,viewPortWidth)
-        }
+        playerMechanics.handlePlayerMoveInput(delta, playerState, viewPortWidth)
     }
 
     private fun handlePlayerJumpInput(delta: Float) {
-        if (Gdx.input.isKeyPressed(Input.Keys.SPACE) && playerState.timeHasBeenJumping < 0.4 || playerState.timeHasBeenJumping > 0 && playerState.timeHasBeenJumping < 0.4) {
-            playerState.jump(delta)
-        } else if (!isPlayerOnPLatform() && playerState.y >= 5f) {
-            playerState.falling(delta)
-            if (playerState.y <= 5) {
-                playerState.timeHasBeenJumping = 0f
-            }
-        }
-    }
-
-    private fun isPlayerOnPLatform(): Boolean {
-        platforms.forEach { platform ->
-            if ((playerState.x > platform.x - playerState.width && playerState.x < platform.x + platform.width) && ((playerState.y > platform.y - platform.height / 2 && playerState.y < platform.y + platform.height / 2) || playerState.y == platform.y + platform.height)) {
-                playerState.y = platform.y + platform.height
-                playerState.timeHasBeenJumping = 0f
-                return true;
-            }
-        }
-        return false
+        playerMechanics.handlePlayerJumpInput(delta, playerState, platforms)
     }
 
     private fun handlePlayerAttackInput(delta: Float) {
